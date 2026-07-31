@@ -280,6 +280,12 @@ means the database's entire structure is fully described in files sitting
 right next to the website's code, not locked away in someone's memory of
 what they clicked.
 
+## Lesson 15: "Draft" content and why the site can hold data it doesn't show yet
+
+The database is now full of real content — your four flagship projects, each with a dozen written sections, your skills, your timeline. And yet if you visited the live site right now, you'd see none of it. That's not a bug — it's a deliberate pattern called a **draft/review workflow**, and it's exactly how professional publishing systems (a newspaper's CMS, a company's blog platform) work: writing something and _publishing_ it are two separate, deliberate steps, with a review step in between.
+
+Every piece of content has a `review_status` — `draft`, `machine_assisted`, or `reviewed` — and the database itself refuses to show anything to the public unless it's marked `reviewed` (see Lesson 12 on row-level security). So content can be fully written, sitting in the database, completely real — but invisible to any visitor — until a human explicitly signs off on it. This is what makes it safe to have an AI draft first-pass content: the drafting and the publishing are never the same action, so nothing goes live by accident.
+
 ---
 
 _Next lessons (Phase 2 onward) will cover: what "embeddings" and vector

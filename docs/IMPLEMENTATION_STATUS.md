@@ -59,7 +59,8 @@ Notable bugs caught along the way (not regressions, just worth remembering — f
 - [x] `src/lib/db/{client,server,admin}.ts` — browser/server (RLS-respecting) and admin (secret-key, RLS-bypassing) client wrappers, `admin.ts` guarded with `server-only`
 - [x] End-to-end connection verified manually: anon client correctly blocked by RLS, admin client correctly bypasses it, both against the live database
 - [x] `npm run verify` clean
-- [ ] Seed script for the 4 flagship projects + supporting/archive + skills/timeline/certifications (paused — how much full case-study prose to draft vs. leave for Johar needs his input first)
+- [x] Seed script written and run: profile, site settings, 22 technologies, 34 skills (38 evidence links), 4-item timeline, 1 certification, and 5 projects (4 flagship + Goa Legislative RAG) with full case-study sections — 52 section translations, 8 metrics total (1 unverified: skin-lesion accuracy)
+- [ ] **Awaiting Johar's review** of the drafted case-study prose (`supabase/seed/data/projects/*.ts`, or the compiled review artifact shared in chat) before flipping any `review_status` to `reviewed` — everything is currently `draft`/`published: false` and correctly invisible on the public site per RLS
 - [ ] Homepage sections (hero, selected work, lab preview, more-projects grid, capability map, about, journey, notes teaser, contact)
 - [ ] Projects index + filters
 - [ ] Project case-study page (12-section order, sticky nav)

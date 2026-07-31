@@ -267,6 +267,38 @@ building anything on top: the publishable-key client correctly saw zero
 rows through RLS on the still-empty tables, and the secret-key client
 correctly bypassed it.
 
+### Seed data and the review gate
+
+`supabase/seed/` holds the initial content, structured as plain data files
+(`data/profile.ts`, `data/technologies.ts`, `data/skills.ts`,
+`data/timeline.ts`, `data/certifications.ts`, `data/projects/*.ts` — one
+file per project) rather than one giant script, so each project's content
+is independently readable and reviewable. `run.ts` wipes every top-level
+table (children cascade-delete automatically via the FKs) and re-inserts
+everything fresh from those files — this is a development/initial-seeding
+tool, not an ongoing sync mechanism; once the Phase 3 admin panel exists,
+content is managed there instead.
+
+Every fact in the four flagship projects' case studies and the Goa
+Legislative RAG entry traces back to `docs/CONTENT_FACTS.md` (and, where
+that was a compressed summary, the original specification's more detailed
+project sections) — nothing new was introduced. The skills capability map
+deliberately omits several items the spec's illustrative list mentions
+(PyTorch/TensorFlow by name, Docker, GitHub Actions, NumPy) because no
+seeded project's facts confirm which specific tool was used — "never list
+a technology solely for keyword density" applies to omission calls like
+this, not just to what gets written.
+
+All project translations, sections, and the profile translation are
+inserted with `review_status = 'draft'` and `published = false` — a
+deliberate choice, not an oversight. This means the public site currently
+shows none of this content (verified: querying with the publishable key
+returns zero rows from `project_translations`, while the ungated
+reference tables like `technologies` return everything, exactly as
+designed). The skin-lesion 90% accuracy figure is the one metric seeded
+with `verified = false` — every other metric drew from facts the spec
+explicitly labels stable enough to show now.
+
 ## Standing habit from here on
 
 Three more documents are now maintained alongside this one, updated every
