@@ -195,6 +195,78 @@ Two layers, deliberately different tools for different jobs:
   bug was visible to a type-checker or a component-level test, only to
   something that actually clicked the button and checked what happened.
 
+## Phase 2 — Content Model and Public Portfolio (in progress)
+
+### Supabase project and the API key system change
+
+Created the Supabase project (`hiiauzddkrfehrcnpzlh`, EU region). While
+setting it up, found that Supabase has moved on from the master prompt's
+"anon key"/"service role key" terminology: new projects now issue
+**publishable keys** (`sb_publishable_...`, client-safe) and **secret
+keys** (`sb_secret_...`, server-only, and rejected outright if a browser
+tries to use one) — the old JWT-based keys still work but are being
+deprecated by end of 2026. Built against the new system: env vars are
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SECRET_KEY`. The
+Postgres roles RLS policies actually check (`anon`, `authenticated`)
+didn't change — only the API key format that maps to them did.
+
+Credentials live in `.env.local` (gitignored) with `.env.example`
+documenting variable names only. A fifth variable,
+`SUPABASE_ACCESS_TOKEN`, is an account-level personal access token (not
+project-specific) that lets the Supabase CLI authenticate non-interactively
+(`supabase link --password ...`) instead of opening a browser — necessary
+in a terminal-only environment.
+
+### Migrations and schema
+
+Four migrations, applied via `supabase db push` (the CLI's Docker-based
+local-diff caching isn't available without Docker installed, but this
+doesn't block pushing directly to the remote database — only local
+`supabase db diff` development would need it):
+
+- `0001_extensions.sql` — `pgcrypto` (UUID generation). `pgvector` is
+  deliberately deferred to whichever migration adds the RAG pipeline
+  (Phase 5) rather than enabled speculatively now.
+- `0002_core_content.sql` — profile, projects (+ translations, sections,
+  metrics, media), technology tags. Defines two Postgres enum types,
+  `locale_code` and `review_status_type`, shared across every translatable
+  table rather than repeating a `text` + `check` constraint ten times.
+- `0003_skills_timeline_content.sql` — the skills evidence map (distinct
+  from technology tags — a skill can have multiple evidence projects and
+  drives the homepage's grouped capability map), timeline, certifications,
+  technical notes, and the visitor-submitted tables (contact form, chat
+  feedback, a generic rate-limit counter table).
+- `0004_rls_policies.sql` — enables row-level security on every single
+  table and adds an `is_admin()` helper function (checks a tiny
+  `admin_users` table against `auth.uid()`). Public policies are narrow
+  `SELECT`s on `published = true` (and, for translations,
+  `review_status = 'reviewed'`) rows; everything else requires
+  `is_admin()`. Two tables (`rate_limit_events`, `admin_users`) get RLS
+  enabled with **zero** policies — not "public read, admin write" like
+  everything else, but fully locked to `anon`/`authenticated`, since only
+  server code using the secret key (which bypasses RLS entirely) ever
+  touches them.
+
+One design choice worth calling out: `project_metrics.verified` is
+enforced _inside the RLS policy itself_, not just checked by application
+code — `select ... where verified and exists (select 1 from projects
+where projects.published)`. An unverified number (like the skin-lesion 90%
+accuracy figure pending confirmation) is structurally incapable of
+reaching the public API response, not merely hidden by a UI convention
+that a future bug could bypass.
+
+### Client wrappers
+
+Three, in `src/lib/db/`: `client.ts` (browser, publishable key, subject to
+RLS), `server.ts` (Server Components/Route Handlers, publishable key +
+the visitor's auth cookies via `@supabase/ssr`, also subject to RLS), and
+`admin.ts` (secret key, bypasses RLS entirely, imports the `server-only`
+package so importing it from a Client Component is a build error rather
+than a runtime leak). Verified end-to-end with a throwaway script before
+building anything on top: the publishable-key client correctly saw zero
+rows through RLS on the still-empty tables, and the secret-key client
+correctly bypassed it.
+
 ## Standing habit from here on
 
 Three more documents are now maintained alongside this one, updated every

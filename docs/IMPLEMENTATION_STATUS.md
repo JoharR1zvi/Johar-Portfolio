@@ -8,16 +8,16 @@ Tracks phase progress against the plan in the master prompt (section 24) and
 first push (see `DECISIONS.md`) so no local-only or tool-specific file ever
 touched the public repo.
 
-| Phase | Description                             | Status      | Notes                                                                            |
-| ----- | --------------------------------------- | ----------- | -------------------------------------------------------------------------------- |
-| 0     | Audit and plan                          | Complete    | Repo audited, all decision docs written and committed                            |
-| 1     | Foundation and visual system            | Complete    | Next.js scaffold, design tokens, next-intl, global layout, tests all green       |
-| 2     | Content model and public portfolio      | Not started | Blocked: needs Supabase project + credentials                                    |
-| 3     | Admin application and AI project import | Not started | Blocked: needs Supabase + LLM/embedding provider keys. Highest complexity phase. |
-| 4     | Interactive lab                         | Not started | Chat/Swiggy UI can start against a stub API before Phase 5 lands                 |
-| 5     | RAG backend                             | Not started | Blocked: needs LLM/embedding provider keys                                       |
-| 6     | GitHub, SEO, performance, polish        | Not started |                                                                                  |
-| 7     | QA and deployment                       | Not started | Blocked: needs Vercel project                                                    |
+| Phase | Description                             | Status      | Notes                                                                                                 |
+| ----- | --------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------- |
+| 0     | Audit and plan                          | Complete    | Repo audited, all decision docs written and committed                                                 |
+| 1     | Foundation and visual system            | Complete    | Next.js scaffold, design tokens, next-intl, global layout, tests all green                            |
+| 2     | Content model and public portfolio      | In progress | Supabase project live, schema + RLS migrated, clients wired. Content authoring and public pages next. |
+| 3     | Admin application and AI project import | Not started | Blocked: needs Supabase + LLM/embedding provider keys. Highest complexity phase.                      |
+| 4     | Interactive lab                         | Not started | Chat/Swiggy UI can start against a stub API before Phase 5 lands                                      |
+| 5     | RAG backend                             | Not started | Blocked: needs LLM/embedding provider keys                                                            |
+| 6     | GitHub, SEO, performance, polish        | Not started |                                                                                                       |
+| 7     | QA and deployment                       | Not started | Blocked: needs Vercel project                                                                         |
 
 ## Phase 0 checklist
 
@@ -49,6 +49,24 @@ touched the public repo.
 
 Notable bugs caught along the way (not regressions, just worth remembering — full detail in `PROJECT_NOTES.md`): the theme toggle initially did nothing because `@base-ui/react`'s `Menu.Item` uses `onClick`, not Radix's `onSelect` convention (caught by the Playwright theme-toggle test, not typecheck); and the header's resume link logged a Base UI console warning for missing `nativeButton={false}` when composing `Button` with a `Link` (caught by manually driving the dev server in a headless browser and checking the console, not by any automated test).
 
+## Phase 2 checklist (in progress)
+
+- [x] Supabase project created (`hiiauzddkrfehrcnpzlh`, EU region), credentials in `.env.local` (gitignored), `.env.example` updated with variable names only
+- [x] `@supabase/supabase-js`, `@supabase/ssr`, Supabase CLI installed
+- [x] Project linked via CLI (`SUPABASE_ACCESS_TOKEN` + DB password, both in `.env.local` only)
+- [x] Migrations written and applied: `0001_extensions`, `0002_core_content`, `0003_skills_timeline_content`, `0004_rls_policies` (25 tables, RLS enabled on every one, `is_admin()` helper)
+- [x] TypeScript types generated from the live schema (`src/types/supabase.ts`)
+- [x] `src/lib/db/{client,server,admin}.ts` — browser/server (RLS-respecting) and admin (secret-key, RLS-bypassing) client wrappers, `admin.ts` guarded with `server-only`
+- [x] End-to-end connection verified manually: anon client correctly blocked by RLS, admin client correctly bypasses it, both against the live database
+- [x] `npm run verify` clean
+- [ ] Seed script for the 4 flagship projects + supporting/archive + skills/timeline/certifications (paused — how much full case-study prose to draft vs. leave for Johar needs his input first)
+- [ ] Homepage sections (hero, selected work, lab preview, more-projects grid, capability map, about, journey, notes teaser, contact)
+- [ ] Projects index + filters
+- [ ] Project case-study page (12-section order, sticky nav)
+- [ ] Resume page real content
+- [ ] Contact form (Zod + `rate_limit_events`-backed rate limiting)
+- [ ] Responsive QA
+
 ## Known exceptions to the quality gate
 
 `npm run verify` passes clean as of Phase 1. The one standing exception is
@@ -58,6 +76,6 @@ what would resolve it.
 
 ## True blockers (see `DECISIONS.md` for detail)
 
-- Supabase project/credentials — needed before Phase 2.
+- ~~Supabase project/credentials~~ — resolved 2026-07-31.
 - LLM + embedding provider API keys (Gemini, Groq) — needed before Phase 3/5.
 - Vercel project — needed before Phase 7.

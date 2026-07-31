@@ -135,9 +135,11 @@ old/new value as jsonb, provenance, review status, affected targets).
 rows only. `contact_submissions`/`chat_feedback` are insert-only for public,
 no public select. Every admin-only table has no public policy at all —
 access requires `auth.uid()` to match the row in a tiny `admin_users` table
-via an `is_admin()` helper. The Supabase service-role key is used only from
-trusted server code (the publish → reindex step), never from any client
-component and never for routine admin CRUD.
+via an `is_admin()` helper. The Supabase secret key (`sb_secret_...` — the
+current key format, replacing the legacy `service_role` JWT; see
+`DECISIONS.md`) is used only from trusted server code (the publish →
+reindex step), never from any client component and never for routine
+admin CRUD.
 
 ## RAG pipeline
 

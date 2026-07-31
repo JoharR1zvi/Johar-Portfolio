@@ -93,3 +93,43 @@ tool's own naming convention for the same reason: keep every committed
 file/folder name generic. This constraint is repo-specific — the mechanics
 (never stage the local instructions file, never name the tool in anything
 that gets committed) are recorded inside that local file itself.
+
+## Supabase API key system (Phase 2)
+
+Researched 2026-07-31 at Phase 2 kickoff: Supabase has replaced the legacy
+JWT-based `anon`/`service_role` keys with a new format — `publishable`
+keys (`sb_publishable_...`, client-safe) and `secret` keys
+(`sb_secret_...`, server-only, full access, rejected outright if used from
+a browser). The legacy keys still work but are being deprecated by end of 2026. Built against the new system from the start rather than the
+spec's original (now-outdated) "anon key"/"service role key" terminology:
+env vars are `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and
+`SUPABASE_SECRET_KEY`. The underlying Postgres roles referenced by RLS
+policies (`anon`, `authenticated`) are unchanged — only the API key
+format changed.
+
+## Database schema decisions made while writing the Phase 2 migrations
+
+A few things the schema summary in `architecture.md` didn't fully pin down,
+resolved while writing the actual SQL:
+
+- **Project slugs are not per-locale.** One canonical slug per project,
+  shared across `/en` and `/de`. Simpler, and none of the four flagship
+  projects need a different slug per language.
+- **`locale` and `review_status` are Postgres enum types** (`locale_code`,
+  `review_status_type`), not per-table `text` + `check` constraints — used
+  identically across 10+ tables, so a shared type is a real DRY win, not
+  premature abstraction.
+- **`project_metrics.verified` is enforced at the RLS level, not just the
+  application layer**: the public `SELECT` policy on `project_metrics`
+  requires `verified = true`. An unverified claim (e.g. skin-lesion 90%
+  accuracy) is structurally incapable of reaching the public site, not
+  merely hidden by UI convention.
+- **`rate_limit_events` and `admin_users` have RLS enabled with zero
+  policies** — not "public read, admin write" like everything else, but
+  fully inaccessible to `anon`/`authenticated`. Both are only ever touched
+  by server code using the secret key, which bypasses RLS entirely.
+- **Profile avatar/resume are plain nullable `text` storage-path columns
+  on `profiles`**, not a generic `media_assets` table — each is a strict
+  1:1 relationship (one avatar, one resume, ever), so a join table would
+  be unused complexity. `project_media` (a real one-to-many) is a proper
+  table.

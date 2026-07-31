@@ -202,8 +202,87 @@ already be permanently in the history before the rule could stop it.
 
 ---
 
-_Next lessons (Phase 2 onward) will cover: what a database actually is and
-why Supabase's "row-level security" matters, what "embeddings" and vector
+## Lesson 11: What is a database, actually, and why Supabase?
+
+A database is just a very organized, very fast filing cabinet. Instead of
+scattered folders, everything is stored in **tables** — think spreadsheets,
+where each row is one "thing" (one project, one skill, one visitor
+message) and each column is one property of that thing (a project's title,
+its status, its GitHub link). A "query" is just a precise question you ask
+the filing cabinet ("give me every project where `published` is true"),
+and the database hands back exactly the matching rows, instantly, even
+with millions of them.
+
+Supabase gives you a real, professional-grade database (Postgres — one of
+the most widely used database engines in the world) plus a few things
+you'd otherwise have to build yourself: a login system, file storage for
+images and PDFs, and a way to talk to the database directly from a website
+without writing your own backend server. That combination is why it's a
+popular choice for exactly this kind of project — one person, no
+dedicated backend team, but still wanting a "real" production setup.
+
+## Lesson 12: Row-level security — the database's own bouncer
+
+Here's a problem: your website's public pages need to read from the same
+database as your private admin panel. If you're not careful, a clever
+visitor could ask the database for things they shouldn't see — draft
+projects you haven't published yet, or private notes.
+
+**Row-level security (RLS)** solves this at the _database's_ level, not
+just in your website's code. You write a rule directly on the database
+table, like "only hand back rows where `published` is true," and the
+database itself refuses to return anything else — no matter what asks for
+it, including a hacker who somehow bypasses your website's own code
+entirely and talks to the database directly. It's a second, independent
+lock, not just trusting your app code to always remember to check.
+
+This project takes it further in one place: whether a metric (like an
+accuracy percentage) is `verified` is also checked _inside_ the database
+rule itself, not just in the website's display code. So an unconfirmed
+number is structurally incapable of ever appearing publicly — even a bug
+in the website code couldn't accidentally leak it, because the database
+itself won't hand it over.
+
+## Lesson 13: Two kinds of "keys," and why never mix them up
+
+Supabase (and most cloud databases) gives you two different passwords for
+talking to it, for two very different situations:
+
+- A **publishable key**: safe to put directly in your website's code that
+  runs in a visitor's browser. It's low-privilege on purpose — even if
+  someone reads it (and they can, it's just sitting in your page's code),
+  the database's row-level security rules still apply to whatever it asks
+  for.
+- A **secret key**: full, unrestricted access to everything in the
+  database, ignoring all those row-level security rules entirely. This
+  must only ever be used in code that runs on a server you control, never
+  sent to a browser. If this leaked, anyone could read or delete anything.
+
+This project keeps them in genuinely separate files on purpose:
+`src/lib/db/client.ts`/`server.ts` use the publishable key,
+`src/lib/db/admin.ts` uses the secret key and is wrapped with a package
+(`server-only`) that makes it an actual build error — not just a
+reminder in a comment — if that file is ever accidentally imported into
+code that would ship to the browser.
+
+## Lesson 14: Migrations — why you don't just click around in a database GUI
+
+You _could_ create database tables by clicking buttons in Supabase's web
+dashboard. Professionals mostly don't, for the same reason this project
+uses git for code: you want a written, ordered history of every change,
+that can be re-applied identically on another machine, reviewed before
+it's applied, and rolled back if something's wrong. A **migration** is
+just a text file containing the exact database changes to make, numbered
+in the order they should run (`0001_extensions.sql`,
+`0002_core_content.sql`, and so on). Running `supabase db push` applies
+any migration files the live database hasn't seen yet, in order. This
+means the database's entire structure is fully described in files sitting
+right next to the website's code, not locked away in someone's memory of
+what they clicked.
+
+---
+
+_Next lessons (Phase 2 onward) will cover: what "embeddings" and vector
 search are and how they let a chatbot find relevant facts about you, and
 how a RAG (retrieval-augmented generation) assistant is different from
 just asking ChatGPT a question._
