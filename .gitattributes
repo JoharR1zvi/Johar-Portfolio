@@ -1,0 +1,12 @@
+# Normalize line endings to LF in the repository regardless of the
+# checkout platform, so Windows/Mac/Linux contributors don't produce
+# spurious whole-file diffs from CRLF/LF mismatches.
+* text=auto eol=lf
+
+# Binary files that should never be diffed or line-ending-converted.
+*.ico binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.woff binary
+*.woff2 binary

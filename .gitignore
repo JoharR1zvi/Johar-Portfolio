@@ -1,0 +1,52 @@
+# Private source material — resume, older CV, project notes.
+# The older CV contains private fields (address, phone, DOB, etc.) that must
+# never enter git history. Never remove this line.
+JoharInfo/
+*Master_Prompt*.docx
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Vercel
+.vercel
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Misc
+*.pem
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+
+# Build artifacts
+dist/
+build/
+
+# Testing
+coverage/
+playwright-report/
+test-results/
+
+# Supabase local dev
+supabase/.branches
+supabase/.temp
+
+# Editor/OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

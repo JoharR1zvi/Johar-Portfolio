@@ -1,0 +1,45 @@
+{
+  "nav": {
+    "work": "Work",
+    "lab": "AI Lab",
+    "about": "About",
+    "journey": "Journey",
+    "notes": "Notes",
+    "contact": "Contact",
+    "resume": "Resume",
+    "skipToContent": "Skip to content",
+    "primaryNavigation": "Primary navigation",
+    "openMenu": "Open menu",
+    "toggleTheme": "Toggle theme",
+    "switchLanguage": "Switch language",
+    "openAssistant": "Ask my AI assistant"
+  },
+  "home": {
+    "title": "Johar Rizvi — Applied AI/ML Engineer",
+    "description": "Building reliable AI systems from data to deployment."
+  },
+  "projects": {
+    "title": "Projects",
+    "description": "Selected work in applied AI, machine learning, and data science."
+  },
+  "lab": {
+    "title": "AI Lab",
+    "description": "Interactive demonstrations of retrieval, reasoning, and data understanding."
+  },
+  "notes": {
+    "title": "Technical Notes",
+    "description": "Short write-ups on engineering decisions and lessons learned."
+  },
+  "resume": {
+    "title": "Resume",
+    "description": "View or download the current resume."
+  },
+  "privacy": {
+    "title": "Privacy",
+    "description": "How chat and contact submissions are handled."
+  },
+  "common": {
+    "comingSoon": "Coming soon",
+    "statusDraft": "Draft"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "nav": {
+    "work": "Projekte",
+    "lab": "KI-Labor",
+    "about": "Über mich",
+    "journey": "Werdegang",
+    "notes": "Notizen",
+    "contact": "Kontakt",
+    "resume": "Lebenslauf",
+    "skipToContent": "Zum Inhalt springen",
+    "primaryNavigation": "Hauptnavigation",
+    "openMenu": "Menü öffnen",
+    "toggleTheme": "Design umschalten",
+    "switchLanguage": "Sprache wechseln",
+    "openAssistant": "Meinen KI-Assistenten fragen"
+  },
+  "home": {
+    "title": "Johar Rizvi — Applied AI/ML Engineer",
+    "description": "Zuverlässige KI-Systeme von den Daten bis zum Deployment."
+  },
+  "projects": {
+    "title": "Projekte",
+    "description": "Ausgewählte Arbeiten in angewandter KI, maschinellem Lernen und Data Science."
+  },
+  "lab": {
+    "title": "KI-Labor",
+    "description": "Interaktive Demonstrationen von Retrieval, Reasoning und Datenverständnis."
+  },
+  "notes": {
+    "title": "Technische Notizen",
+    "description": "Kurze Beiträge zu technischen Entscheidungen und gelernten Lektionen."
+  },
+  "resume": {
+    "title": "Lebenslauf",
+    "description": "Lebenslauf ansehen oder herunterladen."
+  },
+  "privacy": {
+    "title": "Datenschutz",
+    "description": "Wie Chat- und Kontaktanfragen verarbeitet werden."
+  },
+  "common": {
+    "comingSoon": "Demnächst verfügbar",
+    "statusDraft": "Entwurf"
+  }
+}
