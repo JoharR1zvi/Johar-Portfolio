@@ -73,3 +73,23 @@ advisory) forced to `^8.5.25`, and `sharp` (used by `next/image`, has
 libvips CVEs in the pinned version — relevant since admin-uploaded project
 images will flow through it later) forced to `^0.35.3`. Both verified
 installed and deduped correctly after a clean reinstall.
+
+## GitHub repo and the no-AI-attribution constraint (Phase 1)
+
+Pushed to `JoharR1zvi/Johar-Portfolio` on GitHub. Johar's instruction: this
+repo should show no trace anywhere — not commits, not file/folder names,
+not doc content — of which coding-assistant tool was used to build it; it
+should read as entirely his own work. Before the first push, a local-only
+project-instructions file (kept on disk, deliberately not referenced by
+name in `.gitignore` — a public `.gitignore` line naming it would itself
+be the giveaway it's meant to avoid) had already been committed twice.
+Since nothing had been pushed yet, history was squashed into a single
+fresh "Initial commit" via an orphan branch rather than patched forward,
+so no trace of it — or of the original spec document's tool-referencing
+filename — survives anywhere in the pushed history, not just the current
+tree. One planned folder from the original spec (Phase 3+ repeatable
+workflow scripts) is named `scripts/workflows/` here rather than the
+tool's own naming convention for the same reason: keep every committed
+file/folder name generic. This constraint is repo-specific — the mechanics
+(never stage the local instructions file, never name the tool in anything
+that gets committed) are recorded inside that local file itself.

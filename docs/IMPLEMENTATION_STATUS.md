@@ -3,6 +3,11 @@
 Tracks phase progress against the plan in the master prompt (section 24) and
 `DECISIONS.md`. Update this file whenever a phase's status changes.
 
+**Repository:** pushed to GitHub at `JoharR1zvi/Johar-Portfolio`, branch
+`main`. History was squashed to a single clean initial commit before the
+first push (see `DECISIONS.md`) so no local-only or tool-specific file ever
+touched the public repo.
+
 | Phase | Description                             | Status      | Notes                                                                            |
 | ----- | --------------------------------------- | ----------- | -------------------------------------------------------------------------------- |
 | 0     | Audit and plan                          | Complete    | Repo audited, all decision docs written and committed                            |
@@ -42,7 +47,7 @@ Tracks phase progress against the plan in the master prompt (section 24) and
 - [x] `npm run verify` clean
 - [x] `PROJECT_NOTES.md`, `LEARNING_JOURNAL.md`, `PROJECT_REPORT.md` created (backfilled Phase 0 + Phase 1) — maintained every phase from here on
 
-Notable bugs caught by the test setup itself (not yet regressions, just worth remembering): the theme toggle initially did nothing because `@base-ui/react`'s `Menu.Item` uses `onClick`, not Radix's `onSelect` convention — TypeScript didn't catch it because `onSelect` is a valid but unrelated native DOM prop. Caught by the Playwright theme-toggle test, not by typecheck.
+Notable bugs caught along the way (not regressions, just worth remembering — full detail in `PROJECT_NOTES.md`): the theme toggle initially did nothing because `@base-ui/react`'s `Menu.Item` uses `onClick`, not Radix's `onSelect` convention (caught by the Playwright theme-toggle test, not typecheck); and the header's resume link logged a Base UI console warning for missing `nativeButton={false}` when composing `Button` with a `Link` (caught by manually driving the dev server in a headless browser and checking the console, not by any automated test).
 
 ## Known exceptions to the quality gate
 
