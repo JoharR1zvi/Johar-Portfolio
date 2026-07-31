@@ -2,7 +2,7 @@ import type { ProjectSeed } from '../../types';
 
 // Source: docs/CONTENT_FACTS.md's timeline entry for the Inertia
 // Technologies internship (Jul-Aug 2023). Lower priority than the four
-// flagship projects, so a lighter case study — not every section applies
+// flagship projects, so a lighter case study; not every section applies
 // at this depth, and that's fine. Written in first person per Johar's
 // preference.
 export const goaLegislativeRag: ProjectSeed = {
@@ -10,7 +10,7 @@ export const goaLegislativeRag: ProjectSeed = {
   status: 'completed',
   projectType: 'work',
   teamSize: null,
-  role: 'AI Intern — designed and built the RAG assistant',
+  role: 'AI Intern: designed and built the RAG assistant',
   homepagePriority: null,
   safetyLabel: null,
   githubUrl: null,

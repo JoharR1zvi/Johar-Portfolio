@@ -26,19 +26,19 @@ export const swiggy: ProjectSeed = {
     {
       key: 'executive_summary',
       heading: 'Executive summary',
-      body: `I built this as a working proof-of-concept / MVP with a two-person team: a conversational grocery assistant on Swiggy Instamart's MCP (Model Context Protocol) interface. Core flows work and I've tested the integration end-to-end with a real Swiggy developer key — this isn't just a mocked demo, though it's also not a production system. The assistant can reason over prior purchases, suggest meals, turn recipes into live-catalog shopping plans, support voice and photo-based discovery, edit carts conversationally, and pause for human approval before checkout.`,
+      body: `I built this as a working proof-of-concept / MVP with a two-person team: a conversational grocery assistant on Swiggy Instamart's MCP (Model Context Protocol) interface. Core flows work and I've tested the integration end-to-end with a real Swiggy developer key. This isn't just a mocked demo, though it's also not a production system. The assistant can reason over prior purchases, suggest meals, turn recipes into live-catalog shopping plans, support voice and photo-based discovery, edit carts conversationally, and pause for human approval before checkout.`,
     },
     {
       key: 'problem_users_constraints',
       heading: 'Problem, users, and constraints',
-      body: `Grocery shopping apps require a lot of manual searching and cart-building even when the user already knows roughly what they want ("something for a vegetarian dinner tonight"). I set out to build a conversational layer on top of a real commerce catalog that can turn an intent like that into an actual, editable shopping cart — while keeping a human explicitly in the loop before anything is purchased.
+      body: `Grocery shopping apps require a lot of manual searching and cart-building even when the user already knows roughly what they want ("something for a vegetarian dinner tonight"). I set out to build a conversational layer on top of a real commerce catalog that can turn an intent like that into an actual, editable shopping cart, while keeping a human explicitly in the loop before anything is purchased.
 
 A hard constraint throughout: this is a real commerce integration, so nothing in the public version of this project may expose a real account, address, cart, checkout flow, or the Swiggy developer key itself.`,
     },
     {
       key: 'role_contribution',
       heading: 'My role and contribution boundary',
-      body: `This was a two-person team project. I co-developed the agent architecture — the LangGraph orchestration, the tool-calling layer against the Swiggy MCP interface, and the testing strategy described below.`,
+      body: `This was a two-person team project. I co-developed the agent architecture: the LangGraph orchestration, the tool-calling layer against the Swiggy MCP interface, and the testing strategy described below.`,
     },
     {
       key: 'architecture',
@@ -50,30 +50,30 @@ Underneath, thirteen typed JSON-RPC tool wrappers talk to the Swiggy Instamart M
     {
       key: 'data_retrieval_model',
       heading: 'Agent behavior and safety design',
-      body: `I designed the assistant to pause for human-in-the-loop approval at two key points: before finalizing product choices and before cart checkout — nothing is purchased without an explicit human confirmation step. Cart operations go through Pydantic structured outputs rather than free-form text parsing, so a malformed model response can't silently corrupt a cart. Where catalog search doesn't have an exact match, deterministic bounded search fallbacks handle quantity and synonym mismatches rather than leaving the user with a dead end.`,
+      body: `I designed the assistant to pause for human-in-the-loop approval at two key points: before finalizing product choices and before cart checkout. Nothing is purchased without an explicit human confirmation step. Cart operations go through Pydantic structured outputs rather than free-form text parsing, so a malformed model response can't silently corrupt a cart. Where catalog search doesn't have an exact match, deterministic bounded search fallbacks handle quantity and synonym mismatches rather than leaving the user with a dead end.`,
     },
     {
       key: 'evaluation_results',
       heading: 'Evaluation and results',
-      body: `I wrote 55+ mocked tests covering ranking, dietary gates, quantity calculations, routing, persistence, and state regressions. Beyond mocked testing, I've exercised the integration against a real Swiggy developer key — this real-key testing is what surfaced the protocol and LLM-output issues described in "What broke and what I learned," several of which mocked tests alone couldn't have exposed.
+      body: `I wrote 55+ mocked tests covering ranking, dietary gates, quantity calculations, routing, persistence, and state regressions. Beyond mocked testing, I've exercised the integration against a real Swiggy developer key. This real-key testing is what surfaced the protocol and LLM-output issues described in "What broke and what I learned," several of which mocked tests alone couldn't have exposed.
 
 **This is a working proof-of-concept, not a production system.** I don't claim it's production-ready, anonymous visitors can't place real orders through it, and I'm not claiming a completed real purchase.`,
     },
     {
       key: 'engineering_decisions',
       heading: 'Key engineering decisions',
-      body: `- **Human-in-the-loop by design, not as an afterthought** — I built approval gates before product selection and before checkout directly into the graph itself, not bolted on.
-- **Pydantic structured outputs for every cart-mutating operation** — trades some model flexibility for guaranteed-parseable, safe operations.
+      body: `- **Human-in-the-loop by design, not as an afterthought**: I built approval gates before product selection and before checkout directly into the graph itself, not bolted on.
+- **Pydantic structured outputs for every cart-mutating operation**: trades some model flexibility for guaranteed-parseable, safe operations.
 - **Deterministic bounded fallback search** rather than relying entirely on the LLM to handle catalog-matching edge cases like quantity or synonym mismatches.`,
     },
     {
       key: 'failures_lessons',
       heading: 'What broke and what I learned',
-      body: `Real-key integration testing surfaced issues that mocked tests alone couldn't expose — I'm presenting these as evidence of the debugging and engineering process, not as the project's current state:
+      body: `Real-key integration testing surfaced issues that mocked tests alone couldn't expose. I'm presenting these as evidence of the debugging and engineering process, not as the project's current state:
 
 - **Stale state** carried over between conversation turns in ways my mocked tests hadn't caught.
 - **Router misclassification**, where the intent router sent a message down the wrong capability path.
-- **Code-fenced JSON** — the LLM occasionally wrapped structured output in markdown code fences, breaking naive JSON parsing.
+- **Code-fenced JSON**: the LLM occasionally wrapped structured output in markdown code fences, breaking naive JSON parsing.
 - **Dead node wiring** in the LangGraph graph that mocked test paths didn't exercise.
 - **Fallback search gaps** exposed only once real catalog data was in play.
 - **Address binding** issues specific to real address-aware API calls.
@@ -84,7 +84,7 @@ Each of these has since informed my current design (e.g. the structured-output a
     {
       key: 'deployment_testing_security',
       heading: 'Deployment, testing, and security',
-      body: `Testing spans 55+ mocked tests plus real-key integration testing (see above). I never expose the real Swiggy developer key I used for that testing publicly, and the public-facing version of this project (the site's interactive lab simulator) makes no live Swiggy calls at all — it runs against a deterministic mocked state machine instead.`,
+      body: `Testing spans 55+ mocked tests plus real-key integration testing (see above). I never expose the real Swiggy developer key I used for that testing publicly, and the public-facing version of this project (the site's interactive lab simulator) makes no live Swiggy calls at all. It runs against a deterministic mocked state machine instead.`,
     },
     {
       key: 'limitations_responsible_use',

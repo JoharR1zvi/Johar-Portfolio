@@ -1,11 +1,12 @@
 import type { TechnologyCategory, UsageLabel } from '../types';
 
 // The homepage capability map (spec section 9.5). Every skill here is
-// tied to at least one project via real evidence from docs/CONTENT_FACTS.md
-// — skills the spec's illustrative list mentions but that aren't
-// confirmed for any actual project (e.g. a specific deep-learning
-// framework name, Docker, GitHub Actions) are deliberately omitted rather
-// than guessed. "Never list a technology solely for keyword density."
+// tied to at least one project via real evidence from
+// docs/CONTENT_FACTS.md: skills the spec's illustrative list mentions but
+// that had no project-level confirmation were originally omitted (and
+// PyTorch, TensorFlow, Docker, and GitHub Actions were added back once
+// Johar confirmed them directly, 2026-07-31). "Never list a technology
+// solely for keyword density."
 export const skills: {
   slug: string;
   name: string;

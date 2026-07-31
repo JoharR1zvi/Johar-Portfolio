@@ -13,7 +13,8 @@ most require Johar's input (content/assets/confirmations), not code.
 - [ ] Confirm which F1 metrics/charts are stable enough to publish.
 - [ ] Confirm Swiggy repository/demo visibility and the exact extent of live-key testing. Never publish the key.
 - [ ] Add architecture diagrams and screenshots for PE-CDSS and Swiggy.
-- [ ] Confirm the skin-lesion dataset, split methodology, evaluation details, and the 90% accuracy claim before it's shown publicly.
+- [x] Confirm the 90% accuracy claim before it's shown publicly (Johar confirmed directly, 2026-07-31; now live).
+- [ ] Document the skin-lesion dataset, split methodology, and evaluation details behind that confirmed figure (follow-up, not a blocker).
 - [ ] Review all German translations (must be `reviewed`, not just `machine_assisted`, before public display).
 - [ ] Replace the outdated GitHub profile README and pin the strongest repositories (draft lives in `GITHUB_PROFILE_README_DRAFT.md`, push only with explicit approval).
 

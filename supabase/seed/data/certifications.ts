@@ -1,4 +1,4 @@
-// IELTS Band 8.0 is deliberately not here — per docs/CONTENT_FACTS.md it
+// IELTS Band 8.0 is deliberately not here: per docs/CONTENT_FACTS.md it
 // belongs under languages/communication, not as a technical certification.
 // It's mentioned in the profile's about text instead.
 export const certifications: {

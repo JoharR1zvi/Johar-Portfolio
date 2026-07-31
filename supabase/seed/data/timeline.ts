@@ -15,7 +15,7 @@ export const timelineItems: {
     displayOrder: 1,
     title: 'MSc Data Science and Machine Learning',
     description:
-      'Specializing in medical data / Data Science and Machine Learning in Medicine and Health Care. In progress — no graduation date yet.',
+      'Specializing in medical data / Data Science and Machine Learning in Medicine and Health Care. In progress, no graduation date yet.',
   },
   {
     itemType: 'employment',

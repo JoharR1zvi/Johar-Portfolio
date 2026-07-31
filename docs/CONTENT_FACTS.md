@@ -14,13 +14,16 @@ a fabricated value.
 3. The current one-page AI/ML resume (`JoharInfo/Johar_Rizvi_Resume_AIML_OnePage_1.docx`).
 4. The live GitHub repository state.
 5. The Swiggy project notes (`JoharInfo/Swiggy Instamart Agent - Project Notes.pdf`), except where overridden above.
-6. The F1 project brief (`JoharInfo/F1_Race_Predictor_Project_Report.docx`) — treated as a working draft, targets/results may change.
-7. The older verbose CV (`JoharInfo/Johar_Rizvi_CV.pdf`) — supplemental background/older projects only, **never a source for anything publishable verbatim** (see privacy exclusions).
+6. The F1 project brief (`JoharInfo/F1_Race_Predictor_Project_Report.docx`), treated as a working draft; targets/results may change.
+7. The older verbose CV (`JoharInfo/Johar_Rizvi_CV.pdf`), supplemental background/older projects only, **never a source for anything publishable verbatim** (see privacy exclusions).
 
 ## Direct confirmations from Johar (post-launch, dated)
 
-- **2026-07-31**: Confirmed personal fluency with **PyTorch, TensorFlow, Docker, and GitHub Actions** — these were previously omitted from the skills capability map and skin-lesion project's technology tags because the master prompt's illustrative list didn't have project-level confirmation for them. Seeded: PyTorch as `used_in_project` on the skin-lesion classifier (the project's stated deep-learning framework); TensorFlow as `exploring` on the same project (confirmed fluency, but PyTorch is the framework actually used there); Docker and GitHub Actions as `used_in_project` on the Swiggy Instamart assistant.
-- **2026-07-31**: All portfolio project case-study copy should be written in first person ("I built...", not "Johar built...") — this is Johar's own voice addressing a recruiter directly, not third-party documentation.
+- **2026-07-31**: Confirmed personal fluency with **PyTorch, TensorFlow, Docker, and GitHub Actions**. These were previously omitted from the skills capability map and skin-lesion project's technology tags because the master prompt's illustrative list didn't have project-level confirmation for them. Seeded: PyTorch as `used_in_project` on the skin-lesion classifier (the project's stated deep-learning framework); TensorFlow as `exploring` on the same project (confirmed fluency, but PyTorch is the framework actually used there); Docker and GitHub Actions as `used_in_project` on the Swiggy Instamart assistant.
+- **2026-07-31**: All portfolio project case-study copy should be written in first person ("I built...", not "Johar built..."). This is Johar's own voice addressing a recruiter directly, not third-party documentation.
+- **2026-07-31**: Reviewed and approved all seeded profile and project content for publication. `review_status` flipped to `reviewed` and `published` to `true` for the profile, all 5 projects, their sections, and the timeline.
+- **2026-07-31**: Confirmed the skin-lesion classifier's 90% accuracy figure directly. `verified` flipped to `true` for that metric; it's no longer withheld from public display by RLS. Full dataset/evaluation methodology (split strategy, class balance, test-set construction) is still not documented and remains a follow-up item (see `LAUNCH_CHECKLIST.md`).
+- **2026-07-31**: Case-study copy must not use em dashes; use periods, commas, colons, or semicolons instead.
 
 ## Public identity and contact data
 
@@ -76,9 +79,9 @@ Hero must use one identity, not five job titles. Recommended hero copy, tone rul
 
 - Status: Completed bachelor's capstone · Four-person team, Johar was team lead
 - Repo not currently public
-- Safety label: Academic image-classification prototype — not a diagnostic tool
-- EfficientNet transfer-learning, 7-class dermatoscopic classification
-- **The resume's reported 90% accuracy must be stored with a verification flag** and only displayed publicly once Johar supplies dataset/evaluation context or explicitly approves the claim
+- Safety label: Academic image-classification prototype, not a diagnostic tool
+- EfficientNet transfer-learning, 7-class dermatoscopic classification, using PyTorch
+- **The resume's reported 90% accuracy is confirmed directly by Johar (2026-07-31)** and is now displayed publicly. Full dataset/evaluation methodology (split strategy, class balance, test-set construction) is still not documented; that remains a follow-up item, not a blocker to showing the confirmed number.
 - Prefer "skin-lesion classification" over "skin cancer detection" in all copy
 
 ## Supporting work and archive (lower priority)

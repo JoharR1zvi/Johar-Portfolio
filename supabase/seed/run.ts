@@ -2,14 +2,15 @@
 // top-level table (child rows cascade-delete automatically) and rebuilds
 // everything from the data/ files below. This is meant to establish the
 // baseline dataset from docs/CONTENT_FACTS.md, not as an ongoing content
-// sync tool — once the Phase 3 admin panel exists, content is managed
+// sync tool: once the Phase 3 admin panel exists, content is managed
 // there, not by re-running this script.
 //
-// All flagship-project translations and sections are inserted with
-// review_status='draft' and published=false — nothing here becomes
-// publicly visible (enforced by RLS, see migration 0004) until Johar
-// reviews and explicitly publishes it, most likely through the future
-// admin panel.
+// Content was drafted, reviewed by Johar, and approved for publication
+// (2026-07-31, see docs/CONTENT_FACTS.md), so translations and sections
+// are inserted with review_status='reviewed' and published=true. Any
+// future content added here that hasn't been reviewed yet should use
+// review_status='draft' and published=false instead, exactly as this
+// content did before Johar's approval.
 //
 // Run with: npm run db:seed
 
@@ -97,7 +98,7 @@ async function main() {
     hero_subheadline: profileTranslationEn.heroSubheadline,
     about_text: profileTranslationEn.aboutText,
     availability_line: profileTranslationEn.availabilityLine,
-    review_status: 'draft',
+    review_status: 'reviewed',
   });
   if (profileTrErr) throw new Error(`Failed seeding profile translation: ${profileTrErr.message}`);
 
@@ -173,8 +174,8 @@ async function main() {
       title: project.title,
       one_liner: project.oneLiner,
       recruiter_summary: project.recruiterSummary,
-      review_status: 'draft',
-      published: false,
+      review_status: 'reviewed',
+      published: true,
     });
     if (trErr)
       throw new Error(`Failed seeding project translation ${project.slug}: ${trErr.message}`);
@@ -196,7 +197,7 @@ async function main() {
         locale: 'en',
         heading: section.heading,
         body_markdown: section.body,
-        review_status: 'draft',
+        review_status: 'reviewed',
       });
       if (sectionTrErr) {
         throw new Error(
@@ -279,7 +280,7 @@ async function main() {
       locale: 'en',
       title: item.title,
       description: item.description,
-      review_status: 'draft',
+      review_status: 'reviewed',
     });
     if (trErr)
       throw new Error(`Failed seeding timeline translation ${item.title}: ${trErr.message}`);
