@@ -9,12 +9,18 @@ a fabricated value.
 
 ## Source precedence (highest to lowest)
 
-1. Direct corrections in the master prompt dated 2026-07-31.
-2. The current one-page AI/ML resume (`JoharInfo/Johar_Rizvi_Resume_AIML_OnePage_1.docx`).
-3. The live GitHub repository state.
-4. The Swiggy project notes (`JoharInfo/Swiggy Instamart Agent - Project Notes.pdf`), except where overridden above.
-5. The F1 project brief (`JoharInfo/F1_Race_Predictor_Project_Report.docx`) — treated as a working draft, targets/results may change.
-6. The older verbose CV (`JoharInfo/Johar_Rizvi_CV.pdf`) — supplemental background/older projects only, **never a source for anything publishable verbatim** (see privacy exclusions).
+1. Direct corrections/confirmations from Johar, dated (see "Direct confirmations" below for ones given after the master prompt).
+2. Direct corrections in the master prompt dated 2026-07-31.
+3. The current one-page AI/ML resume (`JoharInfo/Johar_Rizvi_Resume_AIML_OnePage_1.docx`).
+4. The live GitHub repository state.
+5. The Swiggy project notes (`JoharInfo/Swiggy Instamart Agent - Project Notes.pdf`), except where overridden above.
+6. The F1 project brief (`JoharInfo/F1_Race_Predictor_Project_Report.docx`) — treated as a working draft, targets/results may change.
+7. The older verbose CV (`JoharInfo/Johar_Rizvi_CV.pdf`) — supplemental background/older projects only, **never a source for anything publishable verbatim** (see privacy exclusions).
+
+## Direct confirmations from Johar (post-launch, dated)
+
+- **2026-07-31**: Confirmed personal fluency with **PyTorch, TensorFlow, Docker, and GitHub Actions** — these were previously omitted from the skills capability map and skin-lesion project's technology tags because the master prompt's illustrative list didn't have project-level confirmation for them. Seeded: PyTorch as `used_in_project` on the skin-lesion classifier (the project's stated deep-learning framework); TensorFlow as `exploring` on the same project (confirmed fluency, but PyTorch is the framework actually used there); Docker and GitHub Actions as `used_in_project` on the Swiggy Instamart assistant.
+- **2026-07-31**: All portfolio project case-study copy should be written in first person ("I built...", not "Johar built...") — this is Johar's own voice addressing a recruiter directly, not third-party documentation.
 
 ## Public identity and contact data
 

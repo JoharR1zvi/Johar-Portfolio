@@ -107,6 +107,22 @@ export const skills: {
     category: 'deep_learning',
     evidence: [{ projectSlug: 'skin-lesion-classification', usage: 'used_in_project' }],
   },
+  {
+    // Confirmed directly by Johar (2026-07-31, see docs/CONTENT_FACTS.md).
+    slug: 'pytorch-skill',
+    name: 'PyTorch',
+    category: 'deep_learning',
+    evidence: [{ projectSlug: 'skin-lesion-classification', usage: 'used_in_project' }],
+  },
+  {
+    // Confirmed directly by Johar (2026-07-31) as a tool he's fluent with;
+    // 'exploring' rather than 'used_in_project' since the skin-lesion
+    // capstone's confirmed framework is PyTorch, not both simultaneously.
+    slug: 'tensorflow-skill',
+    name: 'TensorFlow',
+    category: 'deep_learning',
+    evidence: [{ projectSlug: 'skin-lesion-classification', usage: 'exploring' }],
+  },
 
   // Data Engineering
   {
@@ -190,6 +206,20 @@ export const skills: {
   {
     slug: 'testing-skill',
     name: 'Testing',
+    category: 'production_engineering',
+    evidence: [{ projectSlug: 'swiggy-instamart-assistant', usage: 'used_in_project' }],
+  },
+  {
+    // Confirmed directly by Johar (2026-07-31, see docs/CONTENT_FACTS.md).
+    slug: 'docker-skill',
+    name: 'Docker',
+    category: 'production_engineering',
+    evidence: [{ projectSlug: 'swiggy-instamart-assistant', usage: 'used_in_project' }],
+  },
+  {
+    // Confirmed directly by Johar (2026-07-31, see docs/CONTENT_FACTS.md).
+    slug: 'github-actions-skill',
+    name: 'GitHub Actions',
     category: 'production_engineering',
     evidence: [{ projectSlug: 'swiggy-instamart-assistant', usage: 'used_in_project' }],
   },

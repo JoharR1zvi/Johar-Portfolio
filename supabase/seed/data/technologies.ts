@@ -3,7 +3,8 @@ import type { TechnologyCategory } from '../types';
 // The compact 3-5 tag badges shown on each project card. Deliberately a
 // smaller, concrete list than the skills capability map — every entry here
 // is a technology explicitly named in docs/CONTENT_FACTS.md for at least
-// one flagship project.
+// one flagship project, OR directly confirmed by Johar (2026-07-31: PyTorch,
+// TensorFlow, Docker, GitHub Actions — see docs/CONTENT_FACTS.md).
 export const technologies: { slug: string; name: string; category: TechnologyCategory }[] = [
   { slug: 'fastapi', name: 'FastAPI', category: 'production_engineering' },
   { slug: 'react', name: 'React', category: 'production_engineering' },
@@ -27,4 +28,7 @@ export const technologies: { slug: string; name: string; category: TechnologyCat
   { slug: 'gpt-4', name: 'GPT-4', category: 'platforms_tools' },
   { slug: 'pinecone', name: 'Pinecone', category: 'platforms_tools' },
   { slug: 'embeddings', name: 'Embeddings', category: 'applied_ai' },
+  { slug: 'pytorch', name: 'PyTorch', category: 'deep_learning' },
+  { slug: 'docker', name: 'Docker', category: 'production_engineering' },
+  { slug: 'github-actions', name: 'GitHub Actions', category: 'production_engineering' },
 ];
