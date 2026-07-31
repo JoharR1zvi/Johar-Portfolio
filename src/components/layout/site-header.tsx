@@ -38,7 +38,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Button variant="outline" size="sm" render={<Link href="/resume" />}>
+          <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/resume" />}>
             {t('resume')}
           </Button>
           <Button variant="default" size="sm" className="gap-1.5">

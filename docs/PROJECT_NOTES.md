@@ -148,6 +148,15 @@ obvious from the outside:
   Playwright e2e test (`e2e/homepage.spec.ts`, "theme toggle switches to
   dark mode") caught it immediately; the fix was changing `onSelect` to
   `onClick` in `src/components/layout/theme-toggle.tsx`.
+- Base UI's `Button` defaults to `nativeButton: true` (it assumes it's
+  rendering a real `<button>`). When `Button` is composed via `render`
+  with something that isn't a button — e.g. the header's resume link,
+  `<Button render={<Link href="/resume" />}>` — it needs an explicit
+  `nativeButton={false}` or it logs a console warning about losing native
+  button semantics. Caught by manually running the dev server behind a
+  headless browser and checking `console --errors`, not by any automated
+  test — a reminder that a clean `npm run verify` doesn't guarantee a
+  clean browser console; worth checking by hand after UI changes.
 
 Also worth noting: `lucide-react` (icon library) dropped brand/logo icons
 (no more `Github`/`Linkedin` exports) in the installed major version.
