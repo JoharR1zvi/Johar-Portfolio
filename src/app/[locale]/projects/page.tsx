@@ -1,10 +1,43 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { PagePlaceholder } from '@/components/layout/page-placeholder';
+import { ProjectCard } from '@/components/projects/project-card';
+import { ProjectFilters } from '@/components/projects/project-filters';
+import { filterProjects, getProjectFilterOptions, getPublishedProjects } from '@/lib/db/projects';
 
-export default async function ProjectsPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function ProjectsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ type?: string; tech?: string }>;
+}) {
   const { locale } = await params;
+  const { type, tech } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'projects' });
+  const allProjects = await getPublishedProjects(locale);
+  const options = getProjectFilterOptions(allProjects);
+  const projects = filterProjects(allProjects, { type, tech });
 
-  return <PagePlaceholder title={t('title')} description={t('description')} />;
+  return (
+    <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-16 sm:px-6">
+      <h1 className="font-heading text-foreground text-4xl font-semibold tracking-tight sm:text-5xl">
+        {t('title')}
+      </h1>
+      <p className="text-muted-foreground mt-4 max-w-2xl text-lg">{t('description')}</p>
+
+      <ProjectFilters locale={locale} options={options} activeType={type} activeTech={tech} />
+
+      {projects.length > 0 ? (
+        <ul className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {projects.map((project) => (
+            <li key={project.slug}>
+              <ProjectCard project={project} locale={locale} />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-muted-foreground mt-12">{t('empty')}</p>
+      )}
+    </div>
+  );
 }

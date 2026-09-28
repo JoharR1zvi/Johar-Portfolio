@@ -8,16 +8,16 @@ Tracks phase progress against the plan in the master prompt (section 24) and
 first push (see `DECISIONS.md`) so no local-only or tool-specific file ever
 touched the public repo.
 
-| Phase | Description                             | Status      | Notes                                                                                                 |
-| ----- | --------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------- |
-| 0     | Audit and plan                          | Complete    | Repo audited, all decision docs written and committed                                                 |
-| 1     | Foundation and visual system            | Complete    | Next.js scaffold, design tokens, next-intl, global layout, tests all green                            |
-| 2     | Content model and public portfolio      | In progress | Supabase project live, schema + RLS migrated, clients wired. Content authoring and public pages next. |
-| 3     | Admin application and AI project import | Not started | Blocked: needs Supabase + LLM/embedding provider keys. Highest complexity phase.                      |
-| 4     | Interactive lab                         | Not started | Chat/Swiggy UI can start against a stub API before Phase 5 lands                                      |
-| 5     | RAG backend                             | Not started | Blocked: needs LLM/embedding provider keys                                                            |
-| 6     | GitHub, SEO, performance, polish        | Not started |                                                                                                       |
-| 7     | QA and deployment                       | Not started | Blocked: needs Vercel project                                                                         |
+| Phase | Description                             | Status      | Notes                                                                                                                                              |
+| ----- | --------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | Audit and plan                          | Complete    | Repo audited, all decision docs written and committed                                                                                              |
+| 1     | Foundation and visual system            | Complete    | Next.js scaffold, design tokens, next-intl, global layout, tests all green                                                                         |
+| 2     | Content model and public portfolio      | Complete    | All public pages live and reading from the database. See "Live infrastructure issue" below — the Supabase project itself is currently unreachable. |
+| 3     | Admin application and AI project import | Not started | Blocked: needs Supabase + LLM/embedding provider keys. Highest complexity phase.                                                                   |
+| 4     | Interactive lab                         | Not started | Chat/Swiggy UI can start against a stub API before Phase 5 lands                                                                                   |
+| 5     | RAG backend                             | Not started | Blocked: needs LLM/embedding provider keys                                                                                                         |
+| 6     | GitHub, SEO, performance, polish        | Not started |                                                                                                                                                    |
+| 7     | QA and deployment                       | Not started | Blocked: needs Vercel project                                                                                                                      |
 
 ## Phase 0 checklist
 
@@ -60,13 +60,43 @@ Notable bugs caught along the way (not regressions, just worth remembering — f
 - [x] End-to-end connection verified manually: anon client correctly blocked by RLS, admin client correctly bypasses it, both against the live database
 - [x] `npm run verify` clean
 - [x] Seed script written and run: profile, site settings, 22 technologies, 34 skills (38 evidence links), 4-item timeline, 1 certification, and 5 projects (4 flagship + Goa Legislative RAG) with full case-study sections — 52 section translations, 8 metrics total (1 unverified: skin-lesion accuracy)
-- [ ] **Awaiting Johar's review** of the drafted case-study prose (`supabase/seed/data/projects/*.ts`, or the compiled review artifact shared in chat) before flipping any `review_status` to `reviewed` — everything is currently `draft`/`published: false` and correctly invisible on the public site per RLS
-- [ ] Homepage sections (hero, selected work, lab preview, more-projects grid, capability map, about, journey, notes teaser, contact)
-- [ ] Projects index + filters
-- [ ] Project case-study page (12-section order, sticky nav)
-- [ ] Resume page real content
-- [ ] Contact form (Zod + `rate_limit_events`-backed rate limiting)
-- [ ] Responsive QA
+- [x] Johar reviewed the drafted case-study prose (2026-08-01) — re-seeded with `review_status='reviewed'` and `published: true` across all 5 projects; live on the public site per RLS
+- [x] Homepage sections (`src/app/[locale]/page.tsx` + `src/components/home/*`) — hero, selected work, more projects, lab preview (driven by `site_settings` flags), capability map (`src/lib/db/skills.ts`), about, journey (`src/lib/db/timeline.ts`), notes teaser (static, no `posts` seeded yet), contact. New `src/lib/db/profile.ts` and `src/lib/db/site-settings.ts`. Contact section is links/availability only — the actual form is the separate checklist item below.
+- [x] Projects index (`src/app/[locale]/projects/page.tsx`) — card grid pulling `published`/`reviewed` projects via `src/lib/db/projects.ts`; filters not yet built
+- [x] Project case-study page (`src/app/[locale]/projects/[slug]/page.tsx`) — 12-section order, sticky in-page nav, verified-only metrics, safety-label callout, technologies, GitHub/demo links. Added `react-markdown` (section body rendering) and `@tailwindcss/typography` (prose styling) as new dependencies.
+- [x] Projects index filters (by technology/type) — `src/lib/db/projects.ts`
+      (`getProjectFilterOptions`, `filterProjects`) + `src/components/projects/project-filters.tsx`,
+      plain server-rendered `?type=`/`?tech=` query-param links, no client JS
+- [x] Resume page real content (`src/app/[locale]/resume/page.tsx`) — identity header with contact links, Education/Experience split from `timeline_items` (new `TimelineList` local component shared between both), capability map reused via a new presentational `src/components/skills/skill-groups.tsx` (extracted out of `components/home/capability-map.tsx` so the homepage and resume don't duplicate the skill-grid markup), certifications. Download button stays disabled (no resume PDF uploaded / no storage bucket yet — see `LAUNCH_CHECKLIST.md`).
+- [x] Contact form (`src/app/api/contact/route.ts`, `src/components/home/contact-form.tsx`) — Zod-validated (`src/lib/validation/contact.ts`), rate-limited 5/10min per IP (`src/lib/rate-limit.ts`) against `rate_limit_events` via the admin client (that table has zero public RLS policies by design). IPs are HMAC-hashed (`src/lib/hash-ip.ts`, new `CONTACT_IP_HASH_SECRET` env var) before storage, never stored raw. Manually verified end-to-end against the live database (insert, validation errors, 429 after 5 requests), then test rows deleted.
+- [x] Contact form email notification (`src/lib/email.ts`, new `resend` dependency + `RESEND_API_KEY`) — on a successful submission, emails the profile's public address (reply-to set to the visitor) so a message doesn't sit unnoticed in the database. Sends from Resend's shared sandbox address, not a verified domain (none exists yet). Never throws: a delivery failure logs and doesn't fail the submission, since the row is already saved by the time it runs. Verified with a real send (Resend returned a message ID).
+- [x] Responsive QA — automated headless-browser check across
+      375/768/1024/1440px on every DB-independent route, caught and fixed a
+      real 2px overflow bug in the header at 768px (see `PROJECT_NOTES.md`);
+      the DB-backed routes (home, projects, resume) could not be visually
+      re-verified live tonight because of the Supabase outage below, so
+      re-check those once the database is back
+
+## Live infrastructure issue (found 2026-09-28, blocks everything above until fixed)
+
+The Supabase project (`hiiauzddkrfehrcnpzlh`) is currently unreachable —
+its hostname returns `NXDOMAIN` (does not resolve at all), not just a slow
+or erroring response. Confirmed this isn't a local network/sandbox
+restriction (`supabase.co` itself resolves fine; only this project's
+subdomain fails). Most likely cause: free-tier auto-pause after no API
+traffic since the 2026-08-01 seed run — but only checking the Supabase
+dashboard can confirm and fix it. **Action needed from Johar:** log into
+the Supabase dashboard, un-pause/restore the project (or confirm it needs
+recreating), then let this session know so the affected work can be
+verified live: the new projects-index filters, the header responsive fix,
+and a re-run of `npm run db:seed` if the flags below get flipped.
+
+Two resilience improvements shipped alongside discovering this (real fixes
+worth keeping regardless of what caused tonight's specific outage, not
+just worked around): `src/app/[locale]/error.tsx` (a friendly, translated
+error boundary for any page-level data-fetch failure) and
+`getSiteSettings()` now fails soft to "both lab demos hidden" instead of
+throwing, since it only gates two optional badges, not real content.
 
 ## Known exceptions to the quality gate
 
@@ -77,6 +107,8 @@ what would resolve it.
 
 ## True blockers (see `DECISIONS.md` for detail)
 
-- ~~Supabase project/credentials~~ — resolved 2026-07-31.
+- **Supabase project unreachable** — see "Live infrastructure issue" above.
+  Needs Johar to check the dashboard. Blocks live verification of anything
+  database-backed, not just new phases.
 - LLM + embedding provider API keys (Gemini, Groq) — needed before Phase 3/5.
 - Vercel project — needed before Phase 7.

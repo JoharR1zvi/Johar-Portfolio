@@ -3,7 +3,8 @@ import { expect, test } from '@playwright/test';
 test('redirects the bare root to the default English locale', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveURL(/\/en$/);
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Johar Rizvi');
+  await expect(page).toHaveTitle(/Johar Rizvi/);
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 });
 
 test('main navigation is present and keyboard reachable', async ({ page }) => {
@@ -15,7 +16,10 @@ test('main navigation is present and keyboard reachable', async ({ page }) => {
 
 test('language switcher preserves the current page', async ({ page }) => {
   await page.goto('/en/projects');
-  await page.getByRole('button', { name: 'DE' }).click();
+  await page
+    .getByRole('group', { name: 'Switch language' })
+    .getByRole('button', { name: 'DE', exact: true })
+    .click();
   await expect(page).toHaveURL(/\/de\/projects$/);
 });
 

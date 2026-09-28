@@ -25,7 +25,7 @@ export function SiteHeader() {
           Johar Rizvi
         </Link>
 
-        <nav aria-label={t('primaryNavigation')} className="hidden items-center gap-6 md:flex">
+        <nav aria-label={t('primaryNavigation')} className="hidden items-center gap-6 lg:flex">
           {navItems.map((item) => (
             <Link
               key={item.key}
@@ -37,7 +37,7 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-2 lg:flex">
           <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/resume" />}>
             {t('resume')}
           </Button>
@@ -55,7 +55,7 @@ export function SiteHeader() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="md:hidden"
+                className="lg:hidden"
                 aria-label={t('openMenu')}
               />
             }

@@ -16,15 +16,75 @@
   },
   "home": {
     "title": "Johar Rizvi — Applied AI/ML Engineer",
-    "description": "Zuverlässige KI-Systeme von den Daten bis zum Deployment."
+    "description": "Zuverlässige KI-Systeme von den Daten bis zum Deployment.",
+    "selectedWork": "Ausgewählte Arbeiten",
+    "moreProjects": "Weitere Projekte",
+    "viewAllProjects": "Alle Projekte ansehen",
+    "capabilityMap": "Kompetenzübersicht",
+    "about": "Über mich",
+    "journey": "Werdegang",
+    "contact": "Kontakt",
+    "getInTouch": "Kontakt aufnehmen",
+    "emailMe": "E-Mail senden",
+    "viewOnLinkedin": "LinkedIn",
+    "viewOnGithub": "GitHub",
+    "notes": "Notizen",
+    "notesTeaserDescription": "Kurze Beiträge zu technischen Entscheidungen und gelernten Lektionen, sobald sie entstehen.",
+    "readNotes": "Notizen durchsuchen",
+    "pendingTranslation": "Deutsche Version folgt in Kürze."
+  },
+  "contactForm": {
+    "name": "Name",
+    "email": "E-Mail",
+    "message": "Nachricht",
+    "send": "Nachricht senden",
+    "sending": "Wird gesendet…",
+    "success": "Danke, Ihre Nachricht ist unterwegs. Ich melde mich bald bei Ihnen.",
+    "errorRateLimited": "Zu viele Nachrichten in kurzer Zeit. Bitte versuchen Sie es später erneut.",
+    "errorGeneric": "Beim Senden ist etwas schiefgelaufen. Bitte versuchen Sie es erneut oder schreiben Sie mir direkt per E-Mail."
   },
   "projects": {
     "title": "Projekte",
-    "description": "Ausgewählte Arbeiten in angewandter KI, maschinellem Lernen und Data Science."
+    "description": "Ausgewählte Arbeiten in angewandter KI, maschinellem Lernen und Data Science.",
+    "empty": "Weitere Projekte folgen in Kürze.",
+    "onThisPage": "Auf dieser Seite",
+    "metrics": "Kennzahlen",
+    "technologies": "Technologien",
+    "viewOnGithub": "Auf GitHub ansehen",
+    "liveDemo": "Live-Demo",
+    "role": "Rolle",
+    "teamSize": "Teamgröße",
+    "backToProjects": "Alle Projekte",
+    "filterByType": "Typ",
+    "filterByTechnology": "Technologie",
+    "allTypes": "Alle",
+    "allTechnologies": "Alle"
+  },
+  "projectStatus": {
+    "idea": "Idee",
+    "inProgress": "In Bearbeitung",
+    "mvpPoc": "MVP / POC",
+    "completed": "Abgeschlossen",
+    "deployed": "Im Einsatz",
+    "archived": "Archiviert",
+    "comingSoon": "Demnächst verfügbar"
+  },
+  "projectType": {
+    "personal": "Persönliches Projekt",
+    "university": "Universitätsprojekt",
+    "team": "Teamprojekt",
+    "work": "Berufliches Projekt",
+    "hackathon": "Hackathon-Projekt"
   },
   "lab": {
     "title": "KI-Labor",
-    "description": "Interaktive Demonstrationen von Retrieval, Reasoning und Datenverständnis."
+    "description": "Interaktive Demonstrationen von Retrieval, Reasoning und Datenverständnis.",
+    "previewDescription": "Interaktive Demos zur Funktionsweise zweier Vorzeigeprojekte, mit simulierten oder Beispieldaten.",
+    "viewLab": "Labor öffnen",
+    "f1ExplorerTitle": "F1 Race Predictor Explorer",
+    "f1ExplorerDescription": "Erkunde die leckage-sichere Feature-Pipeline hinter dem Rennvorhersage-Modell.",
+    "swiggySimulatorTitle": "Swiggy Instamart Simulator",
+    "swiggySimulatorDescription": "Durchlaufe den Entscheidungsgraphen des Einkaufsassistenten mit simulierten Katalogdaten."
   },
   "notes": {
     "title": "Technische Notizen",
@@ -32,7 +92,10 @@
   },
   "resume": {
     "title": "Lebenslauf",
-    "description": "Lebenslauf ansehen oder herunterladen."
+    "description": "Lebenslauf ansehen oder herunterladen.",
+    "education": "Ausbildung",
+    "experience": "Berufserfahrung",
+    "certifications": "Zertifikate"
   },
   "privacy": {
     "title": "Datenschutz",
@@ -41,5 +104,30 @@
   "common": {
     "comingSoon": "Demnächst verfügbar",
     "statusDraft": "Entwurf"
+  },
+  "error": {
+    "title": "Etwas ist schiefgelaufen",
+    "description": "Diese Seite konnte gerade nicht geladen werden. Bitte versuchen Sie es in Kürze erneut.",
+    "retry": "Erneut versuchen"
+  },
+  "skillCategory": {
+    "applied_ai": "Angewandte KI",
+    "machine_learning": "Maschinelles Lernen",
+    "deep_learning": "Deep Learning",
+    "data_engineering": "Data Engineering",
+    "production_engineering": "Produktionsentwicklung",
+    "platforms_tools": "Plattformen & Werkzeuge"
+  },
+  "skills": {
+    "exploring": "im Aufbau"
+  },
+  "timeline": {
+    "present": "Heute",
+    "itemType": {
+      "education": "Ausbildung",
+      "employment": "Anstellung",
+      "internship": "Praktikum",
+      "milestone": "Meilenstein"
+    }
   }
 }

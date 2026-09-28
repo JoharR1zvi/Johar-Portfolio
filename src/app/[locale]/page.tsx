@@ -1,41 +1,45 @@
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
+import { About } from '@/components/home/about';
+import { CapabilityMap } from '@/components/home/capability-map';
+import { Contact } from '@/components/home/contact';
+import { Hero } from '@/components/home/hero';
+import { Journey } from '@/components/home/journey';
+import { LabPreview } from '@/components/home/lab-preview';
+import { MoreProjects } from '@/components/home/more-projects';
+import { NotesTeaser } from '@/components/home/notes-teaser';
+import { SelectedWork } from '@/components/home/selected-work';
+import { getProfile } from '@/lib/db/profile';
+import { getPublishedProjects } from '@/lib/db/projects';
+import { getSiteSettings } from '@/lib/db/site-settings';
+import { getCapabilityMap } from '@/lib/db/skills';
+import { getTimeline } from '@/lib/db/timeline';
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: 'home' });
-  const nav = await getTranslations({ locale, namespace: 'nav' });
+
+  const [profile, projects, capabilityMap, timeline, siteSettings] = await Promise.all([
+    getProfile(locale),
+    getPublishedProjects(locale),
+    getCapabilityMap(locale),
+    getTimeline(locale),
+    getSiteSettings(),
+  ]);
+
+  const selectedWork = projects.filter((p) => p.homepagePriority !== null);
+  const moreProjects = projects.filter((p) => p.homepagePriority === null);
 
   return (
     <div className="flex flex-1 flex-col">
-      <section className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-start justify-center gap-4 px-4 py-24 sm:px-6">
-        <h1 className="font-heading text-foreground text-4xl font-semibold tracking-tight sm:text-5xl">
-          {t('title')}
-        </h1>
-        <p className="text-muted-foreground text-lg">{t('description')}</p>
-      </section>
-
-      {/* Placeholder anchor targets for the header's in-page nav links.
-          Full content lands in Phase 2 (selected work, capability map,
-          about, journey, contact). */}
-      <section
-        id="about"
-        className="border-border mx-auto w-full max-w-3xl border-t px-4 py-16 sm:px-6"
-      >
-        <h2 className="font-heading text-foreground text-2xl font-semibold">{nav('about')}</h2>
-      </section>
-      <section
-        id="journey"
-        className="border-border mx-auto w-full max-w-3xl border-t px-4 py-16 sm:px-6"
-      >
-        <h2 className="font-heading text-foreground text-2xl font-semibold">{nav('journey')}</h2>
-      </section>
-      <section
-        id="contact"
-        className="border-border mx-auto w-full max-w-3xl border-t px-4 py-16 sm:px-6"
-      >
-        <h2 className="font-heading text-foreground text-2xl font-semibold">{nav('contact')}</h2>
-      </section>
+      <Hero profile={profile} locale={locale} />
+      <SelectedWork projects={selectedWork} locale={locale} />
+      <MoreProjects projects={moreProjects} locale={locale} />
+      <LabPreview siteSettings={siteSettings} locale={locale} />
+      <CapabilityMap groups={capabilityMap} locale={locale} />
+      <About profile={profile} locale={locale} />
+      <Journey entries={timeline} locale={locale} />
+      <NotesTeaser locale={locale} />
+      <Contact profile={profile} locale={locale} />
     </div>
   );
 }

@@ -289,15 +289,359 @@ seeded project's facts confirm which specific tool was used — "never list
 a technology solely for keyword density" applies to omission calls like
 this, not just to what gets written.
 
-All project translations, sections, and the profile translation are
-inserted with `review_status = 'draft'` and `published = false` — a
-deliberate choice, not an oversight. This means the public site currently
-shows none of this content (verified: querying with the publishable key
-returns zero rows from `project_translations`, while the ungated
-reference tables like `technologies` return everything, exactly as
-designed). The skin-lesion 90% accuracy figure is the one metric seeded
-with `verified = false` — every other metric drew from facts the spec
-explicitly labels stable enough to show now.
+All project translations and sections were initially seeded with
+`review_status = 'draft'` and `published = false` — a deliberate choice,
+not an oversight, so nothing appeared on the public site until a human
+actually read it. Johar reviewed the drafted case-study prose on
+2026-08-01 and approved it as-is; `run.ts` was updated to seed with
+`review_status = 'reviewed'` / `published = true` and re-run, which is the
+live state now (verified: querying with the publishable key returns the
+full project set through `project_translations`, gated correctly by RLS).
+The skin-lesion 90% accuracy figure, confirmed by Johar on 2026-07-31 (see
+`docs/CONTENT_FACTS.md`), is the only metric seeded with `verified = true`
+that required an explicit confirmation step before being written as fact;
+every other metric drew from facts the spec already labelled stable.
+
+### Projects index and case-study pages (public data wiring)
+
+With reviewed content in the database, the two placeholder routes
+(`src/app/[locale]/projects/page.tsx` and `.../projects/[slug]/page.tsx`)
+were wired to it. `src/lib/db/projects.ts` holds the two read functions
+(`getPublishedProjects`, `getProjectBySlug`), both built on
+`lib/db/server.ts` (the RLS-respecting client) — deliberately not the
+admin client, since RLS already encodes every visibility rule these pages
+need (`published`, `review_status = 'reviewed'`, `project_metrics.verified`)
+and duplicating that logic in application code would just be a second
+place for it to drift out of sync.
+
+Two things worth remembering about the query shape:
+
+- Locale filtering on `*_translations` tables uses PostgREST's embedded-resource
+  filter syntax (`.select('..., project_translations!inner(title)').eq('project_translations.locale', locale)`)
+  rather than a second round-trip — the `!inner` join means a project with
+  no translation row for the requested locale simply doesn't come back,
+  which is exactly the desired "not translated yet" behavior for German.
+- Technology names are resolved via a small in-memory map
+  (`getTechnologyNameMap`) built from one flat query, then joined to
+  `project_technologies` links in JS, rather than a doubly-nested
+  PostgREST embed filter (`project_technologies → technologies →
+technology_translations`). Two flat queries are easier to type correctly
+  and read than one fragile three-level nested filter — simple over clever.
+
+The case-study page renders the 12 canonical sections (order comes from
+`project_sections.section_order`, not a hardcoded list) with
+`react-markdown` for the Markdown `body_markdown` content, styled via
+`@tailwindcss/typography`'s `prose` classes (both added as new
+dependencies — nothing in the codebase rendered Markdown before this). A
+sticky in-page nav (plain CSS `position: sticky`, no scroll-spy JS) lists
+each section's heading as an anchor link. Metrics render as a stat strip
+only when `project_metrics` has rows for that project — since RLS already
+filters out `verified = false` metrics, an empty array here means either
+no metrics or none confirmed yet, and the UI treats both the same way (no
+stat strip) without needing to know which.
+
+Because these pages read on every request (cookies-based Supabase client),
+both are dynamic routes (`ƒ` in the `next build` output), not statically
+generated — expected and fine, since project content can change without a
+rebuild once the Phase 3 admin panel exists.
+
+German currently 404s on every case-study page and shows an empty grid on
+the index — not a bug, just an accurate reflection of the data: no project
+content has German translations yet (seeding only ever inserted
+`locale: 'en'` rows). The index page has an explicit `t('empty')` fallback
+string for this state rather than rendering a bare empty grid.
+
+### Homepage sections
+
+The last placeholder page, `src/app/[locale]/page.tsx`, is now real: nine
+sections (hero, selected work, more projects, lab preview, capability map,
+about, journey, notes teaser, contact), each its own component under
+`src/components/home/`, composed in one `Promise.all` at the top of the
+page so all five data sources (profile, projects, skills, timeline, site
+settings) fetch in parallel rather than waterfalling.
+
+Three new read-only lib files follow the same shape as
+`lib/db/projects.ts` from the projects-page work: `lib/db/profile.ts`
+(the single profile row plus its locale translation), `lib/db/skills.ts`
+(skills grouped by category for the capability map), `lib/db/timeline.ts`
+(the journey list), and `lib/db/site-settings.ts` (two booleans that gate
+whether the F1/Swiggy lab demos show as live or "coming soon" — reads
+`site_settings`, which is fully public, no locale or review gating at all).
+
+A few decisions worth remembering:
+
+- **Selected work vs. more projects is just a filter, not two queries.**
+  `getPublishedProjects` already returns every published project ordered
+  by `homepage_priority` (nulls last); the homepage partitions that one
+  list into "has a priority" (the four flagship projects) and "doesn't"
+  (currently just the Goa Legislative RAG entry) rather than querying
+  twice. Both sections reuse the same `ProjectCard` component built for
+  `/projects` — no new near-duplicate card component.
+- **A skill's badge style depends on its evidence, not a stored flag.**
+  `skill_project_evidence.usage_label` can be `used_in_project`,
+  `currently_developing`, or `exploring`. `getCapabilityMap` computes,
+  per skill, whether _any_ evidence row is `used_in_project`; if not
+  (e.g. TensorFlow, seeded as `exploring` only), the homepage renders it
+  with a visibly different badge style and an "(exploring)" suffix rather
+  than presenting it identically to confirmed skills — the same
+  never-overstate principle from the RLS-enforced `verified` metrics flag,
+  applied here in application code instead of a database constraint,
+  since "confirmed" here is a derived property across possibly-multiple
+  evidence rows, not a single boolean column.
+- **The homepage's `contact` section is not the contact form.** It's
+  `mailto:`/GitHub/LinkedIn links plus the profile's availability line,
+  sourced from the `profiles` table. The actual Zod-validated,
+  rate-limited submission form is still a separate, not-yet-built
+  checklist item — conflating the two would have meant either a fake form
+  with no backend, or scope-creeping this pass into building the rate
+  limiter too.
+- **German gets the same "not translated yet" treatment as the projects
+  pages, with one addition.** `profiles`/`skills`/`timeline_items` are
+  only ever seeded in English, so on `/de` the hero and About/Journey
+  sections have no translation row to read. Rather than rendering an
+  empty heading with nothing under it, About and Journey fall back to a
+  new shared string, `home.pendingTranslation`
+  ("Deutsche Version folgt in Kürze."), so a German visitor sees an
+  explicit, honest "not yet" instead of a section that looks broken.
+- **A stale Phase-1 assertion had to be fixed, not worked around.**
+  `e2e/homepage.spec.ts` originally asserted the homepage's `<h1>`
+  contained "Johar Rizvi" — true only because the old placeholder page
+  literally rendered the `messages/*.json` site title as its heading. The
+  real, reviewed hero copy (`profile_translations.hero_headline`,
+  "Building reliable AI systems from data to deployment.") is the
+  intentional H1 — the name already appears in the header logo, the
+  footer, and the `<title>` tag, so repeating it in the H1 isn't the
+  design. The test now checks the document title for the name and just
+  asserts an H1 is present, which reflects what the page is actually
+  supposed to show rather than an artifact of unfinished content.
+- **An unrelated pre-existing e2e flake surfaced and got fixed while in
+  here.** The language-switcher test located the "DE" button with
+  `getByRole('button', { name: 'DE' })`, which under Next's dev-mode
+  overlay ambiguously matches two buttons — Playwright's accessible-name
+  matching is a case-insensitive substring match by default, and "Open
+  Next.js **Dev** Tools" contains "de". Scoped the locator to the
+  language switcher's `role="group"` container instead of matching
+  buttons globally.
+
+### Resume page
+
+`src/app/[locale]/resume/page.tsx` reuses the same data the homepage
+already fetches — `getProfile`, `getTimeline`, `getCapabilityMap` — plus a
+new `getCertifications` (`src/lib/db/certifications.ts`, same
+one-level-embed-filter pattern as the other list queries). It's a genuine
+second, differently-shaped view of that data, not a copy of the homepage:
+the single unified journey timeline becomes two separate lists, split
+client-side by `item_type` (`education` vs. everything else) rather than
+two separate queries, since the whole timeline is a handful of rows and
+splitting an already-fetched array is simpler than adding a second
+DB round-trip for a filter this cheap.
+
+Reusing the homepage's `CapabilityMap` component directly here didn't
+work: it renders its own `<section id="capability-map" class="max-w-6xl
+border-t py-16 ...">` wrapper, which would have nested a wider,
+independently-padded section inside the resume's narrower
+`max-w-3xl` column and doubled up the vertical spacing next to the
+resume's own `gap-16` rhythm. Fixed by pulling the actual skill-grid
+markup (categories → badges) out into a new presentational component,
+`src/components/skills/skill-groups.tsx`, that takes no section wrapper
+or heading of its own. `CapabilityMap` now just supplies its
+homepage-specific wrapper and heading around `<SkillGroups>`; the resume
+page supplies its own. Same lesson as the `ProjectCard` reuse from the
+projects-page work: share the part that's genuinely identical (the data,
+the badge logic), not the part that's contextual (layout, heading level,
+spacing).
+
+The two Education/Experience lists render through one local
+`TimelineList` component defined in the same file (not exported
+elsewhere — it's a page-specific arrangement of already-shared data, not
+a second copy of the homepage's `Journey` rendering logic, which stays as
+its own single-list component for the homepage's different framing).
+
+The "download resume" button stays disabled, matching the exact comment
+already left in the original placeholder file: no PDF has been exported
+and uploaded yet (`docs/LAUNCH_CHECKLIST.md`), and no Storage bucket for
+it exists yet either (`profiles.resume_storage_path` is a plain nullable
+text column per `docs/DECISIONS.md`, but nothing has ever written a
+migration for the actual bucket or its access policy). Wiring a
+conditional download link against a bucket name that doesn't exist yet
+would be guessing at infrastructure Phase 3's admin upload flow hasn't
+decided; better to leave the honest "coming soon" state than build half
+of a feature against an assumption.
+
+### Contact form
+
+First real write path on the public site — everything before this only
+ever read from Supabase. `docs/architecture.md`'s target file tree already
+named the shape (`src/app/api/contact/route.ts`), so this follows it
+rather than inventing a Server Action instead.
+
+Request flow: `ContactForm` (`src/components/home/contact-form.tsx`, a
+Client Component — the first one outside the existing theme/nav chrome)
+does a plain `fetch('/api/contact', { method: 'POST' })`, no form library.
+Field-level required/type/length validation is delegated entirely to the
+browser's native HTML constraints (`required`, `type="email"`,
+`minLength`/`maxLength`) rather than hand-rolled JS: with `noValidate` not
+set, the browser blocks the `submit` event from firing at all until those
+constraints pass, and — a genuinely nice side effect — Chrome/Firefox
+localize their built-in validation bubble text from the page's `lang`
+attribute automatically, so an invalid email on `/de` already shows a
+German browser message for free, no translation work needed for that
+layer specifically.
+
+The server route (`src/app/api/contact/route.ts`) is the actual source of
+truth: `contactFormSchema` (`src/lib/validation/contact.ts`, a plain Zod
+object schema, no `server-only` on it since the same file could be reused
+for client-side validation later) re-validates everything server-side —
+native HTML constraints are trivially bypassable by anyone calling the
+API directly, so skipping server validation because "the browser already
+checked" would be a real hole, not just belt-and-suspenders.
+
+Two new server-only helpers back the route:
+
+- **`src/lib/hash-ip.ts`**: HMAC-SHA256 (not plain SHA-256) of the
+  visitor's IP, keyed by a new `CONTACT_IP_HASH_SECRET` env var. Plain
+  SHA-256 of an IPv4 address is crackable by brute force in seconds — the
+  entire IPv4 space is only ~4 billion values, small enough to
+  precompute a full rainbow table — so a keyed hash is what actually
+  makes `ip_hash` privacy-preserving rather than only privacy-looking.
+- **`src/lib/rate-limit.ts`**: counts existing `rate_limit_events` rows
+  for that IP hash + endpoint within a 10-minute window; under 5, records
+  a new event and allows the request; at or over, blocks it (HTTP 429).
+
+Both go through `createAdminClient()` (secret key), not the
+RLS-respecting server client — the only option, since
+`rate_limit_events` has RLS enabled with **zero** policies for
+`anon`/`authenticated` (see `docs/DECISIONS.md`), on purpose: nothing
+except trusted server code should ever be able to read or tamper with
+someone else's rate-limit counters. `admin.ts`'s doc comment was updated
+to name this as a third legitimate reserved use, alongside the
+publish/reindex pipeline and seed scripts.
+
+Verified against the real, live database rather than mocked: a valid
+submission actually landed a row in `contact_submissions`; a malformed
+email and a too-short message both correctly returned `400` with
+field-level Zod issues; six rapid submissions returned `201` for the
+first five and `429` for the sixth and any after. All test rows and
+rate-limit events created during that check were deleted afterward — the
+production tables that will hold real visitor messages shouldn't carry
+test junk.
+
+### Contact form email notification
+
+A gap noticed right after shipping the form itself: a message saved
+straight to a database table with no admin UI yet (Phase 3) means it's
+genuinely invisible until someone thinks to open the Supabase table
+editor. Not in the original spec, added as a follow-up once that became
+obvious.
+
+`src/lib/email.ts` wraps Resend's Node SDK behind one function,
+`sendContactNotification`, called from the route handler right after the
+`contact_submissions` insert succeeds. It looks up the recipient from
+`profiles.public_email` (the same single source of truth the rest of the
+site already reads from) rather than hardcoding an address in code or a
+second env var — one place for that fact to live, not two that could
+drift apart. `replyTo` is set to the _visitor's_ address, so replying to
+the notification email goes straight to them, not back to the noreply
+sender.
+
+Two decisions worth flagging:
+
+- **No verified sending domain yet, so it sends from Resend's shared
+  `onboarding@resend.dev` sandbox address.** A verified domain requires
+  DNS records this project doesn't have anywhere to put yet — no domain
+  has been purchased, deployment is Phase 7. Documented in
+  `docs/DECISIONS.md` as a pragmatic default to revisit once a domain
+  exists, not a permanent choice.
+- **A failed send never fails the request.** `sendContactNotification`
+  catches and logs internally rather than letting the error propagate —
+  by the time it runs, the visitor's message is already safely in the
+  database, which is the part that actually matters. If Resend has an
+  outage, the visitor should still see success, not a scary error for a
+  notification email they don't even know exists.
+
+Verified with two real sends against the live Resend API (one through
+the actual route, one direct), both returned a real message ID — not
+just "the code didn't throw," an actual confirmed accepted send. The
+test contact-form row was deleted afterward, same as the rest of this
+feature's testing.
+
+### Projects index filters, a header responsive bug, error-boundary resilience, and a live database outage
+
+Closed out the two remaining Phase 2 checklist items in one pass, then hit
+a real infrastructure problem while verifying the second one.
+
+**Filters.** `getPublishedProjects` already returned every published
+project with its resolved technologies; two small pure functions,
+`getProjectFilterOptions` (distinct project types + technologies actually
+present in the current list) and `filterProjects` (an AND filter over
+`type`/`tech`), sit in front of the existing list rather than adding new
+Supabase queries — five projects and ~20 technologies is small enough that
+filtering in memory after one fetch is simpler and cheaper than a second
+round-trip per facet. The UI itself (`components/projects/project-filters.tsx`)
+is plain server-rendered `<Link>` chips reading/writing `?type=`/`?tech=`
+query params, no client-side JS at all — Base UI's `Badge` `render` prop
+composes the chip styling directly onto the `Link`, matching the
+`render`-prop convention already established for Button+Link in the header
+(Base UI, not Radix, uses `render` where Radix would use `asChild`).
+
+**Responsive QA surfaced an actual bug.** Rather than eyeballing the
+site, a throwaway Playwright script drove a real headless browser at
+mobile (375px), two tablet widths (768px, 1024px), and desktop (1440px)
+against every route that doesn't require the database, measuring
+`document.documentElement.scrollWidth` against the viewport width to catch
+horizontal overflow programmatically instead of by eye. It found a real,
+reproducible 2px horizontal overflow at exactly 768px on every single
+page: the header switched from the mobile hamburger menu to the full
+desktop nav (logo + 6 nav links + resume button + assistant button +
+language switcher + theme toggle) at Tailwind's `md:` breakpoint (768px),
+but that's not actually enough horizontal room for all of that — it only
+comfortably fits from `lg:` (1024px) up. Fixed by moving all three
+breakpoint classes (`nav`, the button/switcher group, and the hamburger's
+`md:hidden`) from `md:` to `lg:`, so tablet-width visitors correctly still
+get the hamburger menu instead of a cramped, overflowing desktop nav.
+Re-ran the same script after the fix (zero overflow at any width) and a
+second script that actually clicked the hamburger open at 768px and
+1024px to confirm the sheet menu itself still works, not just that the
+button is visible.
+
+**A live database outage, found by accident.** Starting the dev server to
+run that Playwright script turned up something unrelated to responsive
+design entirely: every page that reads from Supabase (`/`, `/projects`,
+`/resume`, etc.) was throwing `TypeError: fetch failed`, and the project's
+own hostname (`hiiauzddkrfehrcnpzlh.supabase.co`) doesn't resolve in DNS
+at all (`nslookup` returns `Non-existent domain`) — not a slow response, a
+completely absent one. `supabase.co` itself resolves fine, so this isn't a
+network/sandbox restriction; the specific project is unreachable. This
+predates tonight's session entirely (nothing here touched Supabase
+infrastructure) and most likely explains itself: this is a free-tier
+project that's had no API traffic since the seed re-run on 2026-08-01, and
+Supabase auto-pauses free projects after a period of inactivity. **This
+needs Johar to check the Supabase dashboard and un-pause or restore the
+project before any further live-database verification (including
+re-running the seed script, or visually confirming tonight's filter UI in
+a browser) is possible.** Nothing in the codebase can fix this from here.
+
+While tracking this down, two resilience gaps became obvious and got
+fixed on the spot rather than left for later, since both are cheap and
+generally correct regardless of what caused this specific outage:
+
+- **`src/app/[locale]/error.tsx`** — a segment-level error boundary that
+  was previously entirely missing. Before this, any data-fetch failure
+  (this outage, or any future transient one) rendered Next's raw
+  development error overlay in dev and an unstyled failure in production.
+  Now it shows a translated, on-brand "Something went wrong / Try again"
+  message with a retry button, while the header/footer/nav/theme toggle
+  around it keep working, since the boundary sits below the layout, not
+  above it.
+- **`getSiteSettings()` now fails soft.** It only ever gates two optional
+  "coming soon" lab-demo badges on the homepage, not real content, so a
+  database hiccup there shouldn't take down the entire homepage the way a
+  failed profile/projects fetch legitimately should. It now catches its
+  own error, logs it, and returns both flags `false` (both demos hidden)
+  instead of throwing — the one place in the data layer where "hide an
+  optional feature" is a more honest response to an outage than "crash the
+  page," precisely because it's the one query result that was already
+  designed to have a safe default.
 
 ## Standing habit from here on
 

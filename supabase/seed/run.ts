@@ -6,11 +6,11 @@
 // there, not by re-running this script.
 //
 // Content was drafted, reviewed by Johar, and approved for publication
-// (2026-07-31, see docs/CONTENT_FACTS.md), so translations and sections
-// are inserted with review_status='reviewed' and published=true. Any
-// future content added here that hasn't been reviewed yet should use
-// review_status='draft' and published=false instead, exactly as this
-// content did before Johar's approval.
+// (2026-08-01), so translations and sections are inserted with
+// review_status='reviewed' and published=true. Any future content added
+// here that hasn't been reviewed yet should use review_status='draft' and
+// published=false instead, exactly as this content did before Johar's
+// approval.
 //
 // Run with: npm run db:seed
 

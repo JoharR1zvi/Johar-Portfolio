@@ -16,15 +16,75 @@
   },
   "home": {
     "title": "Johar Rizvi — Applied AI/ML Engineer",
-    "description": "Building reliable AI systems from data to deployment."
+    "description": "Building reliable AI systems from data to deployment.",
+    "selectedWork": "Selected work",
+    "moreProjects": "More projects",
+    "viewAllProjects": "View all projects",
+    "capabilityMap": "Capability map",
+    "about": "About",
+    "journey": "Journey",
+    "contact": "Contact",
+    "getInTouch": "Get in touch",
+    "emailMe": "Email me",
+    "viewOnLinkedin": "LinkedIn",
+    "viewOnGithub": "GitHub",
+    "notes": "Notes",
+    "notesTeaserDescription": "Short write-ups on engineering decisions and lessons learned, as they're written.",
+    "readNotes": "Browse notes",
+    "pendingTranslation": "German version coming soon."
+  },
+  "contactForm": {
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "send": "Send message",
+    "sending": "Sending…",
+    "success": "Thanks, your message is on its way. I'll get back to you soon.",
+    "errorRateLimited": "Too many messages sent recently. Please try again later.",
+    "errorGeneric": "Something went wrong sending your message. Please try again or email me directly."
   },
   "projects": {
     "title": "Projects",
-    "description": "Selected work in applied AI, machine learning, and data science."
+    "description": "Selected work in applied AI, machine learning, and data science.",
+    "empty": "More projects are on the way.",
+    "onThisPage": "On this page",
+    "metrics": "Metrics",
+    "technologies": "Technologies",
+    "viewOnGithub": "View on GitHub",
+    "liveDemo": "Live demo",
+    "role": "Role",
+    "teamSize": "Team size",
+    "backToProjects": "All projects",
+    "filterByType": "Type",
+    "filterByTechnology": "Technology",
+    "allTypes": "All",
+    "allTechnologies": "All"
+  },
+  "projectStatus": {
+    "idea": "Idea",
+    "inProgress": "In progress",
+    "mvpPoc": "MVP / POC",
+    "completed": "Completed",
+    "deployed": "Deployed",
+    "archived": "Archived",
+    "comingSoon": "Coming soon"
+  },
+  "projectType": {
+    "personal": "Personal project",
+    "university": "University project",
+    "team": "Team project",
+    "work": "Work project",
+    "hackathon": "Hackathon project"
   },
   "lab": {
     "title": "AI Lab",
-    "description": "Interactive demonstrations of retrieval, reasoning, and data understanding."
+    "description": "Interactive demonstrations of retrieval, reasoning, and data understanding.",
+    "previewDescription": "Interactive demos of the reasoning behind two flagship projects, running on mocked or sample data.",
+    "viewLab": "Open the lab",
+    "f1ExplorerTitle": "F1 Race Predictor Explorer",
+    "f1ExplorerDescription": "Explore the leakage-aware feature pipeline behind the race predictor.",
+    "swiggySimulatorTitle": "Swiggy Instamart Simulator",
+    "swiggySimulatorDescription": "Walk through the shopping assistant's agent graph on mocked catalog data."
   },
   "notes": {
     "title": "Technical Notes",
@@ -32,7 +92,10 @@
   },
   "resume": {
     "title": "Resume",
-    "description": "View or download the current resume."
+    "description": "View or download the current resume.",
+    "education": "Education",
+    "experience": "Experience",
+    "certifications": "Certifications"
   },
   "privacy": {
     "title": "Privacy",
@@ -41,5 +104,30 @@
   "common": {
     "comingSoon": "Coming soon",
     "statusDraft": "Draft"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "This page couldn't load right now. Please try again in a moment.",
+    "retry": "Try again"
+  },
+  "skillCategory": {
+    "applied_ai": "Applied AI",
+    "machine_learning": "Machine Learning",
+    "deep_learning": "Deep Learning",
+    "data_engineering": "Data Engineering",
+    "production_engineering": "Production Engineering",
+    "platforms_tools": "Platforms & Tools"
+  },
+  "skills": {
+    "exploring": "exploring"
+  },
+  "timeline": {
+    "present": "Present",
+    "itemType": {
+      "education": "Education",
+      "employment": "Employment",
+      "internship": "Internship",
+      "milestone": "Milestone"
+    }
   }
 }

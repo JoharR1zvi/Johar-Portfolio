@@ -286,6 +286,141 @@ The database is now full of real content — your four flagship projects, each w
 
 Every piece of content has a `review_status` — `draft`, `machine_assisted`, or `reviewed` — and the database itself refuses to show anything to the public unless it's marked `reviewed` (see Lesson 12 on row-level security). So content can be fully written, sitting in the database, completely real — but invisible to any visitor — until a human explicitly signs off on it. This is what makes it safe to have an AI draft first-pass content: the drafting and the publishing are never the same action, so nothing goes live by accident.
 
+**Update, 2026-08-01:** you reviewed the drafted case-study prose and approved it, so the seed script was re-run with `review_status='reviewed'` and `published=true`. The draft/review mechanism described above is still exactly how the site works — it's just that this particular content has now passed through it and is live.
+
+## Lesson 16: Turning database rows into an actual webpage
+
+Having reviewed content sitting in the database isn't the same as it appearing on the site — something still has to ask the database for it and turn the answer into HTML. That "something" is two files: `src/app/[locale]/projects/page.tsx` (the grid of all projects) and `.../projects/[slug]/page.tsx` (one project's full write-up), plus a helper file, `src/lib/db/projects.ts`, that actually talks to Supabase.
+
+A few things worth understanding about how that works:
+
+- **The database query already knows the rules, so the page doesn't have to re-check them.** Lesson 12 explained that row-level security means the database itself refuses to hand back unpublished or unreviewed content. Because of that, the page-building code never has to write its own "only show this if it's published" check — it just asks for the data, and anything it gets back is already safe to show. One rule, enforced in one place, instead of trusted to be remembered in every page that happens to query it.
+- **Markdown, and why it needed a new tool.** Your case-study sections are written with light formatting — **bold** phrases, bullet lists, links — using a plain-text convention called **Markdown** (the same style GitHub comments and this very chat use). A browser doesn't understand `**bold**` on its own; something has to translate it into real HTML (`<strong>bold</strong>`). This project added a small library, `react-markdown`, to do exactly that translation, plus `@tailwindcss/typography` to make the translated result actually look good (readable paragraph spacing, styled bullet points) instead of plain, cramped text.
+- **Two simple questions instead of one clever one.** Getting a project's technology names (like "Python," "FastAPI") required two related pieces of information: which technologies a project uses, and what each technology is actually called in the visitor's language. It would have been possible to ask the database one very deeply nested question for all of it at once, but that kind of query gets fragile and hard to read. Instead, the code asks two simple questions — "what are all the technology names in this language?" and "which technology IDs does this project use?" — and combines the answers itself. Slower to write once, much easier to trust and fix later.
+- **Some pages can't be "pre-baked."** Earlier phases mentioned Next.js can build pages ahead of time for speed (Lesson 3). The projects pages can't do that, because they depend on live database content that can change — instead they're built fresh on every visit ("dynamic rendering," shown as a small `ƒ` symbol in the build output). That's a deliberate tradeoff: slightly slower than a pre-built page, but always shows current content without needing to rebuild and redeploy the whole site.
+
+## Lesson 17: Building a page out of nine smaller pieces
+
+The homepage went from a placeholder to nine real sections in one pass:
+hero, selected work, more projects, a lab preview, a "capability map" of
+skills, an about blurb, a career journey, a notes teaser, and contact
+links. Rather than one enormous file, each section is its own small
+component (`src/components/home/hero.tsx`, `.../about.tsx`, and so on),
+and the actual homepage file just lists them in order. This is the same
+idea as Lesson 1's Lego-block analogy: a page is easier to reason about,
+fix, and reorder when it's nine labeled pieces instead of one 400-line
+block.
+
+A few smaller lessons came out of this pass specifically:
+
+- **Don't fetch data one section at a time if you don't have to.** All
+  five things the homepage needs (your profile, your projects, your
+  skills, your career timeline, and two feature flags) get requested at
+  the same time using `Promise.all`, not one after another. If each took
+  even 100ms and there are five of them, fetching them one-by-one would
+  add up to half a second of pure waiting; fetching them together, the
+  total wait is just the slowest one of the five.
+- **A derived fact doesn't need its own database column.** Whether a
+  skill shows as "confirmed" or "(exploring)" on the capability map isn't
+  a value stored anywhere; it's computed by asking "does this skill have
+  at least one piece of real project evidence, or only exploratory
+  evidence?" every time the page loads. Storing a separate `confirmed`
+  column that you'd have to remember to keep in sync would be a second
+  source of truth that could quietly drift from the real evidence over
+  time — computing it fresh from the actual evidence rows can't drift,
+  because there's nothing to drift.
+- **When reviewed content doesn't exist yet in a language, say so
+  honestly instead of showing nothing.** The About and Journey sections
+  have no German text yet (matching Lesson 15's draft/review system — no
+  one has written and approved a German version). Instead of a heading
+  with a blank space under it, which would look like something broke,
+  those sections show an explicit "German version coming soon" message.
+  Small difference, but it's the gap between "this looks broken" and
+  "this is honestly still in progress."
+- **A test that was right once can become wrong later, and that's not a
+  reason to leave it broken.** An old automated test checked that the
+  homepage's big heading contained your name, because the very first,
+  placeholder version of the homepage happened to display the site title
+  (which includes your name) as its heading. Once real content replaced
+  the placeholder, the heading correctly changed to your actual mission
+  statement instead ("Building reliable AI systems from data to
+  deployment") — your name still appears elsewhere on the page (the logo,
+  the footer), just not duplicated in the big heading too. The test was
+  quietly checking an accident of the placeholder, not an actual
+  requirement, so it got updated to check what the page is genuinely
+  supposed to show.
+
+## Lesson 18: Reusing a component in a new place can reveal it wasn't reusable yet
+
+The resume page needed the exact same "skills grouped by category" display the homepage already has. The obvious move was to import the homepage's existing component and drop it onto the resume page. It didn't work cleanly: that component came with its own built-in spacing and section wrapper baked in specifically for the homepage's layout, so reusing it as-is on the narrower resume page would have produced doubled-up padding and an oddly wide section squeezed into a narrow column.
+
+The fix wasn't to force it to fit, and it wasn't to copy-paste the skill-rendering code into a second file either (copy-pasting means the next bug fix or design tweak has to happen twice, in two places, and eventually the two copies drift apart). Instead, the actual "list of skills as little badges" part got pulled out into its own small, layout-free piece, and both the homepage and the resume page now wrap that same core piece with their own layout around it. This is a common pattern: the first time you actually reuse something in a second place is often the first time you find out which parts of it were genuinely general-purpose and which parts were quietly specific to where it was first built.
+
+## Lesson 19: The contact form, and why "just save it to the database" isn't the whole job
+
+Every page built so far only ever reads from the database. The contact form is the first thing on the public site that writes to it, and a public write path is exactly where a website is most exposed to abuse, so it's worth walking through why it isn't just "take the three text boxes and insert a row."
+
+- **Checking on two levels isn't redundant, it's two different jobs.** The actual `<input>` and `<textarea>` fields are marked `required` with a minimum length, so a browser refuses to even submit the form if you leave the message empty. But that check runs on _your visitor's own computer_, which means it's trivial for anyone to skip it entirely just by sending a request straight to the server instead of using your form. So the server checks everything again, independently, using the same rules (via a tool called Zod, which describes "a valid submission looks like this" once and enforces it). The browser check is there for a nicer, instant experience for a real visitor; the server check is there because you can never actually trust anything that arrives from outside your own server.
+- **Rate limiting stops one visitor from flooding you.** Without it, someone (or some bot) could submit the form hundreds of times a second, filling your inbox with junk or just running up costs. The fix here: a small database table counts how many messages a given visitor has sent in the last 10 minutes, and once they hit 5, the 6th is rejected outright rather than accepted and dealt with later.
+- **You can't fairly count "a given visitor" using their name or email, since those can be faked.** The one honest signal a visitor can't easily fake is their IP address, which is why it's what gets counted. But storing someone's raw IP address is itself a small privacy problem, so instead of storing the real one, the server runs it through a one-way scrambling function first and only ever stores the scrambled version. Critically, that scrambling uses a secret key only the server knows, not a generic scrambling formula anyone could look up: an IPv4 address only has about 4 billion possible values, which is small enough that anyone could pre-compute every possible scrambled result in advance and reverse yours in an instant if the scrambling formula were public. The secret key is what makes that reversal actually infeasible.
+- **A feature isn't actually done until you've tried to break it, not just tried to use it correctly.** Before calling this finished, the form got tested with an invalid email, a too-short message, and then six submissions in a row on purpose, specifically to confirm the 6th one gets rejected. All three of those are the visitor doing something "wrong," and a feature that's only ever been tested by doing everything right hasn't really been tested.
+
+## Lesson 20: A database row isn't the same as you actually knowing about it
+
+Right after the contact form went in, a real gap showed up: a message saved to the database is genuinely invisible to you unless you go open Supabase and look at a table by hand. There's no admin dashboard yet that would show it to you automatically (that's a later phase). "It's saved" and "you'll actually see it" turned out to be two different things, and only one of them was built at first.
+
+The fix is a notification email: the moment a message saves successfully, the server also asks a third-party email service (Resend) to send you a quick email with what the visitor wrote. Two small choices worth understanding:
+
+- **The email is set up to fail quietly if it fails at all.** If Resend has an outage right when someone messages you, the visitor should still see "message sent" and not a scary error, because their message really did save; the only thing that failed is a bonus notification they don't even know exists. So a failed email gets logged for you to notice later, but it never makes the visitor's experience look broken over something that isn't really their problem.
+- **"It compiled" and "it actually sent" are different claims, so both got checked.** The code could easily look correct while silently failing to reach Resend (wrong key, wrong sender, etc.), so before calling this done, two real emails were actually sent through Resend's real service and each one came back with a real confirmation ID, not just "no error was thrown."
+
+## Lesson 21: Testing "does it look right on a phone" with code instead of your eyes
+
+Phase 2's last two items were filtering the projects page and a
+responsive pass (checking the site looks right at every screen size). The
+filters were the easy part. The responsive check is the interesting
+lesson: instead of manually resizing a browser window and squinting at
+every page, a small script drove a real (invisible, "headless") browser
+to four different screen widths — phone, two tablet sizes, and desktop —
+and asked each page one exact question: "is anything on this page wider
+than the screen itself?" That's a programmatic, exact version of the
+"does anything look cut off" check you'd otherwise do by eye.
+
+It found a real bug: at exactly tablet width (768 pixels), the header was
+switching from the mobile hamburger-menu button to the full desktop
+navigation bar (your name, six links, two buttons, language switcher,
+theme toggle), but there genuinely wasn't enough room for all of that yet
+at that width — it overflowed the screen by about 2 pixels on every
+single page. The fix was to simply make the switch happen at a wider
+point (1024 pixels instead of 768), so tablet-width visitors keep getting
+the hamburger menu, which was always going to fit, instead of a
+too-early, too-cramped desktop bar. This is exactly why "responsive QA"
+is its own checklist item and not just an assumption that flexible CSS
+means everything automatically fits — the components can each be
+individually correct and still not fit together at a specific width
+nobody explicitly checked.
+
+While starting that browser to test it, something else turned up
+completely by accident: the site's live database has become unreachable.
+Every page that reads real content from Supabase is currently failing,
+and it's an infrastructure issue outside the code entirely — the
+project's database address doesn't resolve on the internet at all
+anymore, most likely because Supabase's free tier automatically pauses a
+project after it goes unused for a while (nothing had touched this
+database since early August). This isn't something fixable by writing
+code; it needs Johar to log into the Supabase dashboard and restore the
+project. It's flagged clearly in `IMPLEMENTATION_STATUS.md` as the
+current top blocker.
+
+That discovery led to one more small but genuinely useful addition:
+Next.js lets you define a page that automatically catches any error a
+page throws while loading and shows a friendly message instead of a raw
+technical crash screen. The site didn't have one of these yet, so any
+future hiccup like this one (even a brief, real one after launch) would
+have shown visitors a broken-looking error page instead of a calm
+"something went wrong, try again" message with the rest of the site
+(header, footer, navigation) still working normally around it.
+
 ---
 
 _Next lessons (Phase 2 onward) will cover: what "embeddings" and vector
