@@ -8,6 +8,7 @@ import { SiteHeader } from '@/components/layout/site-header';
 import { SkipLink } from '@/components/layout/skip-link';
 import { ThemeProvider } from '@/components/layout/theme-provider';
 import { routing } from '@/i18n/routing';
+import { SITE_URL } from '@/lib/seo';
 import '../globals.css';
 
 const geistSans = Geist({
@@ -32,8 +33,18 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'home' });
   return {
-    title: t('title'),
+    metadataBase: new URL(SITE_URL),
+    title: { template: '%s | Johar Rizvi', default: t('title') },
     description: t('description'),
+    openGraph: {
+      siteName: 'Johar Rizvi',
+      type: 'website',
+      locale: locale === 'de' ? 'de_DE' : 'en_US',
+    },
+    twitter: {
+      card: 'summary_large_image',
+    },
+    robots: { index: true, follow: true },
   };
 }
 

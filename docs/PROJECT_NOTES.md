@@ -749,6 +749,46 @@ is the extracted piece — same lesson as the `ProjectCard` and
 piece of UI is usually what reveals which part of it was actually
 general-purpose.
 
+## Phase 6, started early: per-page SEO metadata
+
+With Phase 4 done and Phases 3/5/7 all genuinely blocked (LLM keys,
+Vercel), the highest-value unblocked work left was Phase 6's SEO
+metadata — every route had been silently sharing one identical
+`<title>`/description from the root layout since Phase 1, since only that
+layout ever defined `generateMetadata`. Fixed with a title template
+(`{page} | Johar Rizvi`, root keeps its own full default) and a
+`generateMetadata` export on every route, plus `src/lib/seo.ts`'s
+`localeAlternates()` helper for canonical/hreflang tags (this site is
+bilingual with `localePrefix: 'always'`, so every page has a real EN/DE
+counterpart worth cross-linking, not just a canonical self-reference).
+
+Adding `/projects/[slug]`'s dynamic metadata surfaced a subtle but real
+inefficiency: `generateMetadata` and the page component both need the same
+project, and without React's `cache()` wrapping `getProjectBySlug`, that's
+two separate database round-trips for one page view, since Supabase
+client calls aren't automatically deduplicated the way `fetch()` calls
+are. Wrapped it in `cache()` — request-scoped memoization, not a persistent
+cache, so it dedupes exactly the two calls within one request and nothing
+more.
+
+`src/app/sitemap.ts` and `src/app/robots.ts` use Next's built-in
+metadata-route file conventions rather than hand-rolled XML/text
+responses. The sitemap reads published projects from the database, same
+as everything else tonight it couldn't be verified live because of the
+outage — confirmed only that `npm run build` still succeeds, since
+`sitemap.ts` calling `cookies()` (via the same Supabase server client
+everything else uses) forces it to build as a dynamic route rather than
+attempting to run at build time, so the outage can't break the build
+itself, only the route's live response until the database is back.
+
+The homepage also gained a `Person` JSON-LD block
+(`src/components/seo/person-json-ld.tsx`) — structured data search
+engines can use to build a knowledge-panel-style understanding of who the
+site is about. Built strictly from fields `docs/CONTENT_FACTS.md` already
+lists as public (name, title, city-level location, public email,
+GitHub/LinkedIn), so nothing here exposes anything not already visible
+elsewhere on the same page.
+
 ## Standing habit from here on
 
 Three more documents are now maintained alongside this one, updated every

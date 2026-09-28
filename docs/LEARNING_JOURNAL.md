@@ -462,6 +462,28 @@ there on disk, reading it directly beats writing something that merely
 sounds plausible, and finding a real discrepancy is worth surfacing
 honestly rather than quietly picking whichever number seems safer.
 
+## Lesson 23: Every page was quietly showing the same browser-tab title
+
+A search engine (or someone sharing a link in a chat app) mostly judges a
+page by its title and description tags, the same little snippet under a
+Google search result. Since Phase 1, this site only ever defined that
+snippet once, for the whole site, in the outermost layout file. That meant
+every single page, the projects list, a specific project's page, the
+resume, all of it, showed the exact same title and description, which
+looks unprofessional to a search engine and gives a recruiter sharing a
+project link no useful preview text.
+
+The fix: every page now defines its own short title ("Projects", "Resume",
+or, for a specific project, that project's real name), and a shared
+template automatically appends " | Johar Rizvi" to all of them, so nothing
+had to be repeated by hand on every single page. Two more small, standard
+web-discoverability pieces got added alongside it: a `sitemap.xml` (a
+list of every real page, for search engines to find), a `robots.txt`
+(explicit permission for search engines to index the site), and a small
+block of structured data on the homepage that helps a search engine
+understand "this page is about a person named Johar Rizvi, here's his
+job title and where to find him," rather than having to guess.
+
 ---
 
 _Next lessons (Phase 2 onward) will cover: what "embeddings" and vector

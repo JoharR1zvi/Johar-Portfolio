@@ -1,4 +1,5 @@
 import 'server-only';
+import { cache } from 'react';
 import { createClient } from '@/lib/db/server';
 import type { Database } from '@/types/supabase';
 
@@ -163,7 +164,12 @@ export async function getPublishedProjects(locale: string): Promise<ProjectListI
   });
 }
 
-export async function getProjectBySlug(
+/**
+ * Wrapped in `cache()` below: the case-study page's `generateMetadata` and
+ * its page component both need this same project, and without request-scoped
+ * memoization that's two round-trips to the database for one page view.
+ */
+async function getProjectBySlugUncached(
   slug: string,
   locale: string,
 ): Promise<ProjectDetail | null> {
@@ -241,3 +247,5 @@ export async function getProjectBySlug(
     technologies: techByProject.get(project.id) ?? [],
   };
 }
+
+export const getProjectBySlug = cache(getProjectBySlugUncached);

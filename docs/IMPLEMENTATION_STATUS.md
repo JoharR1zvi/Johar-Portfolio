@@ -16,7 +16,7 @@ touched the public repo.
 | 3     | Admin application and AI project import | Not started           | Blocked: needs Supabase + LLM/embedding provider keys. Highest complexity phase.                                                                                   |
 | 4     | Interactive lab                         | Built, pending review | Both demos and the /lab index are built and pass verify; both stay behind their `site_settings` flags (`false`) until Johar reviews the content and flips them on. |
 | 5     | RAG backend                             | Not started           | Blocked: needs LLM/embedding provider keys                                                                                                                         |
-| 6     | GitHub, SEO, performance, polish        | Not started           |                                                                                                                                                                    |
+| 6     | GitHub, SEO, performance, polish        | SEO metadata done     | Per-page titles/descriptions, canonical/hreflang, sitemap.xml, robots.txt, Person JSON-LD. Performance/GitHub-polish items still open.                             |
 | 7     | QA and deployment                       | Not started           | Blocked: needs Vercel project                                                                                                                                      |
 
 ## Phase 0 checklist
@@ -144,6 +144,34 @@ nothing here is currently visible on the public site.
 - [ ] Chat UI against a stub API (deferred; Phase 5's actual RAG backend is
       still blocked on Gemini/Groq keys, and the two demos above were the
       higher-value use of unblocked time tonight)
+
+## Phase 6 checklist (SEO metadata done tonight; rest still open)
+
+Every route previously shared one identical `<title>`/description from the
+root layout (a real gap — `/projects`, `/resume`, `/lab`, etc. all looked
+the same to search engines and shared links). Fixed with a title template
+(`%s | Johar Rizvi`, root layout keeps the full default for `/`) plus
+per-page `generateMetadata` everywhere:
+
+- [x] `src/lib/seo.ts` — shared `SITE_URL` (from `NEXT_PUBLIC_SITE_URL`,
+      new env var, defaults to `localhost:3000`) and `localeAlternates()`
+      (canonical + hreflang for both locales)
+- [x] Per-page metadata: `/`, `/projects`, `/projects/[slug]` (dynamic,
+      real project title/one-liner), `/resume`, `/lab` + both demo pages,
+      `/notes` (+ `[slug]` noindexed, no real posts seeded yet), `/privacy`
+- [x] `getProjectBySlug` wrapped in React's `cache()` — its new
+      `generateMetadata` call and the page component both need the same
+      project, so this dedupes it to one DB round-trip per request instead
+      of two
+- [x] `src/app/robots.ts`, `src/app/sitemap.ts` (static routes across both
+      locales + every published project slug; dynamic, since it reads the
+      database — untestable live tonight because of the outage above,
+      confirmed via `npm run build` only)
+- [x] `src/components/seo/person-json-ld.tsx` — schema.org Person on the
+      homepage, built only from fields already public per
+      `docs/CONTENT_FACTS.md`
+- [ ] Everything else in Phase 6: GitHub profile README/pin, performance
+      budget pass, remaining polish
 
 ## Known exceptions to the quality gate
 

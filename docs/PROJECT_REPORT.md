@@ -93,7 +93,10 @@ F1-pipeline explorer and a mocked Swiggy assistant simulator, both running
 entirely on static/scripted content with no live database or AI-provider
 dependency at all. Both stay hidden behind a feature flag until I review
 the content myself and turn them on, so nothing above is publicly visible
-yet.
+yet. Every page also now has its own real search-engine title and
+description (previously every page silently shared one), plus a sitemap,
+robots file, and structured data for the homepage (Phase 6, started
+early).
 
 **Current blocker (infrastructure, not code):** the project's Supabase
 database has become unreachable (its hostname no longer resolves),

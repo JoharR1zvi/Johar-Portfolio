@@ -1,11 +1,27 @@
 import { ExternalLink } from 'lucide-react';
+import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { F1Pipeline } from '@/components/lab/f1-pipeline';
 import { Button } from '@/components/ui/button';
 import { getSiteSettings } from '@/lib/db/site-settings';
 import { PagePlaceholder } from '@/components/layout/page-placeholder';
+import { localeAlternates } from '@/lib/seo';
 
 const REPO_URL = 'https://github.com/JoharR1zvi/F1-race-predictor';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'lab' });
+  return {
+    title: t('f1ExplorerTitle'),
+    description: t('f1ExplorerDescription'),
+    alternates: localeAlternates(locale, '/lab/f1-explorer'),
+  };
+}
 
 export default async function F1ExplorerPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

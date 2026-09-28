@@ -1,7 +1,23 @@
+import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { ProjectCard } from '@/components/projects/project-card';
 import { ProjectFilters } from '@/components/projects/project-filters';
 import { filterProjects, getProjectFilterOptions, getPublishedProjects } from '@/lib/db/projects';
+import { localeAlternates } from '@/lib/seo';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'projects' });
+  return {
+    title: t('title'),
+    description: t('description'),
+    alternates: localeAlternates(locale, '/projects'),
+  };
+}
 
 export default async function ProjectsPage({
   params,

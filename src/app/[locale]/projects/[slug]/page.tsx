@@ -1,4 +1,5 @@
 import { TriangleAlert } from 'lucide-react';
+import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
@@ -7,6 +8,23 @@ import { Button } from '@/components/ui/button';
 import { ProjectMarkdown } from '@/components/projects/project-markdown';
 import { getProjectBySlug } from '@/lib/db/projects';
 import { projectStatusLabel, projectTypeLabel } from '@/lib/projects/labels';
+import { localeAlternates } from '@/lib/seo';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; slug: string }>;
+}): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const project = await getProjectBySlug(slug, locale);
+  if (!project) return {};
+
+  return {
+    title: project.title,
+    description: project.oneLiner ?? project.recruiterSummary ?? undefined,
+    alternates: localeAlternates(locale, `/projects/${slug}`),
+  };
+}
 
 export default async function ProjectCaseStudyPage({
   params,

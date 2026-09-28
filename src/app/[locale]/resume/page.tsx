@@ -1,4 +1,5 @@
 import { Mail } from 'lucide-react';
+import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { GithubIcon, LinkedinIcon } from '@/components/icons/brand-icons';
 import { SkillGroups } from '@/components/skills/skill-groups';
@@ -9,6 +10,21 @@ import { getCapabilityMap } from '@/lib/db/skills';
 import type { TimelineEntry } from '@/lib/db/timeline';
 import { getTimeline } from '@/lib/db/timeline';
 import { formatMonthYear } from '@/lib/format-date';
+import { localeAlternates } from '@/lib/seo';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'resume' });
+  return {
+    title: t('title'),
+    description: t('description'),
+    alternates: localeAlternates(locale, '/resume'),
+  };
+}
 
 function TimelineList({
   entries,

@@ -1,11 +1,27 @@
+import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { PagePlaceholder } from '@/components/layout/page-placeholder';
 import { SwiggyAgentSimulator } from '@/components/lab/swiggy-agent-simulator';
 import { getSiteSettings } from '@/lib/db/site-settings';
+import { localeAlternates } from '@/lib/seo';
 
 interface BrokeItem {
   title: string;
   body: string;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'lab' });
+  return {
+    title: t('swiggySimulatorTitle'),
+    description: t('swiggySimulatorDescription'),
+    alternates: localeAlternates(locale, '/lab/swiggy-simulator'),
+  };
 }
 
 export default async function SwiggySimulatorPage({
