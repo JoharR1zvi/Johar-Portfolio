@@ -86,6 +86,162 @@
     "swiggySimulatorTitle": "Swiggy Instamart Simulator",
     "swiggySimulatorDescription": "Durchlaufe den Entscheidungsgraphen des Einkaufsassistenten mit simulierten Katalogdaten."
   },
+  "labF1": {
+    "intro": "Das ist ein deterministischer Durchlauf durch die Datenpipeline hinter dem Rennvorhersage-Modell, keine Live-Modell-Demo. Nichts hier ist eine finale Genauigkeits-, ROC-AUC- oder „bestes Modell“-Aussage, das Projekt ist noch in Arbeit.",
+    "stagesHeading": "Die Pipeline bisher",
+    "repoCta": "Repository auf GitHub ansehen",
+    "stages": [
+      {
+        "title": "Drei Datenquellen, robust eingebunden",
+        "body": "Drei Quellen speisen die Pipeline: Jolpica (historische Ergebnisse und Qualifying), FastF1 (Telemetrie- und Rundendaten) und OpenF1 (Live-Timing-ähnliche Session-Daten), integriert über die Saisons 2022–2025. Alle drei Integrationen nutzen Caching, Retry mit exponentiellem Backoff und Rate-Limit-Handling, sodass eine instabile API-Antwort die gesamte Pipeline nicht gleich zum Absturz bringt."
+      },
+      {
+        "title": "Von Runden-Daten zu einer Renneintrag-Tabelle",
+        "body": "Rund 100.000 rundenbasierte Datensätze werden zu einem Renneintrag-Datensatz mit 1.838 Zeilen verarbeitet, eine Zeile pro Fahrer und Rennen. Die Zusammenführung der drei Quellen führte zunächst zu einer Many-to-many-Explosion; behoben wurde das strukturell mit einer Brückentabelle, nicht mit einem Deduplizierungs-Workaround."
+      },
+      {
+        "title": "Datenqualität als fester Bestandteil, nicht als Randnotiz",
+        "body": "Bevor der Datensatz zuverlässig genug für das Feature Engineering war, brauchte es echte Arbeit an der Datenqualität: Abgleich der Wetterabdeckung, Parsing der Qualifying-Zeiten, Wiederherstellung von Boolean-Flags und Korrektur der DNF-Kennzeichnung. Das behandle ich als festen Bestandteil des Projekts, nicht als Randnotiz."
+      },
+      {
+        "title": "Feature Engineering, ohne die Zukunft zu verraten",
+        "body": "Rolling-Window-Features nutzen shift(1), sodass ein Feature zur aktuellen Form eines Fahrers ausschließlich Informationen von vor dem vorherzusagenden Rennen verwendet. Die Validierung erfolgt zeitbasiert, nicht durch einen zufälligen Split, da ein zufälliger Split bei zeitbasierten Renndaten das Modell unbemerkt aus zukünftigen Rennen lernen lassen würde, während es an vergangenen validiert wird."
+      },
+      {
+        "title": "Modellierung: bewusst noch in Arbeit",
+        "body": "Zieldefinition, Modellwahl und finale, validierte Ergebnisse sind bewusst noch in Arbeit. Genauigkeits-, ROC-AUC- oder „bestes Modell“-Aussagen werden hier noch nicht veröffentlicht; ich lasse das lieber weg, als etwas Unfertiges als final darzustellen. Der Fortschritt ist im GitHub-Repository sichtbar."
+      }
+    ]
+  },
+  "labSwiggy": {
+    "intro": "Das ist ein deterministischer Durchlauf durch den Agentengraphen des Swiggy-Instamart-Assistenten, keine echte Integration. Jede Nachricht, jeder Katalogartikel und jeder Preis auf dieser Seite ist geskriptet und simuliert, ganz bewusst: Das eigentliche Projekt wurde durchgängig gegen einen echten Swiggy-Entwicklerschlüssel getestet, aber die öffentliche Seite ruft diesen niemals auf. Wähle eine Funktion aus, um zu sehen, wie eine Nachricht durch den Graphen läuft.",
+    "pickHeading": "Eine Funktion ausprobieren",
+    "mockedBadge": "Simuliert",
+    "approvalBadge": "Wartet auf deine Bestätigung",
+    "mockedNote": "Jeder Katalogartikel, Preis und jede Antwort oben ist geskriptet und simuliert. Es steckt kein echtes Swiggy-Konto, kein echter Katalog und kein echter Kauf dahinter.",
+    "brokeHeading": "Was kaputtging, und was ich daraus gelernt habe",
+    "scenarios": [
+      {
+        "label": "Essensvorschläge",
+        "user": "Was kann ich heute Abend kochen?",
+        "assistant": "Basierend auf deinen letzten Bestellungen fehlen dir wahrscheinlich Zwiebeln und Paneer. Hier sind 3 schnelle Ideen fürs Abendessen: Paneer Butter Masala mit Reis, ein einfaches Dal mit Roti, oder ein Vegetable Pulao. Soll ich die fehlenden Zutaten für eines davon einpreisen?",
+        "steps": [
+          { "node": "Router", "desc": "Ordnet die Nachricht als Essensvorschlag-Anfrage ein" },
+          {
+            "node": "Bestellhistorie abrufen",
+            "desc": "Leitet aus letzten Bestellungen ab, was wahrscheinlich noch vorhanden ist"
+          },
+          {
+            "node": "Essensvorschlag-Agent",
+            "desc": "Schlägt Gerichte vor und bepreist nur die fehlenden Zutaten im simulierten Katalog"
+          },
+          { "node": "Antwort", "desc": "Formuliert die Antwort. Noch keine Änderung am Warenkorb." }
+        ]
+      },
+      {
+        "label": "Wiederkehrende Einkaufslisten",
+        "user": "Erstelle eine Liste namens Wochenbasics: Milch und Eier, jeden Montag.",
+        "assistant": "Simulierte Demo: „Wochenbasics“ (Milch, große Eier) ist ab sofort für jeden Montag geplant. Wenn sie fällig ist, zeige ich sie dir hier zur Bestätigung oder Bearbeitung, ich bestelle nie automatisch.",
+        "steps": [
+          { "node": "Router", "desc": "Ordnet die Nachricht als wiederkehrende Liste ein" },
+          {
+            "node": "Semantischer Katalogabgleich",
+            "desc": "Findet zu „große Eier“ den passenden Katalogartikel, auch bei abweichendem Wortlaut"
+          },
+          {
+            "node": "Scheduler",
+            "desc": "Registriert einen wiederkehrenden Job, der prüft, wann die Liste fällig ist"
+          },
+          { "node": "Antwort", "desc": "Bestätigt dir den Zeitplan" }
+        ]
+      },
+      {
+        "label": "Foto- & Sprach-Erkennung",
+        "user": "[lädt ein Foto einer leeren Ketchup-Flasche hoch] (simuliert)",
+        "assistant": "Das sieht nach Tomatenketchup aus. Ich habe 3 Treffer im simulierten Katalog gefunden. Soll ich die 500g-Flasche hinzufügen?",
+        "steps": [
+          { "node": "Router", "desc": "Ordnet die Nachricht als Erkennungs-Anfrage ein" },
+          {
+            "node": "Foto-/Sprachauswertung",
+            "desc": "Extrahiert eine Produktbeschreibung aus Bild oder Sprachnachricht"
+          },
+          {
+            "node": "Katalogsuche",
+            "desc": "Sucht im simulierten Katalog nach passenden Produkten"
+          },
+          { "node": "Antwort", "desc": "Bittet dich um Bestätigung, bevor etwas hinzugefügt wird" }
+        ]
+      },
+      {
+        "label": "Rezept zu Warenkorb",
+        "user": "Ich möchte Biryani für 4 Personen kochen.",
+        "assistant": "Simulierte Einkaufsliste für Biryani (4 Portionen): Basmatireis, gemischtes Gemüse, Joghurt, Biryani-Masala und Röstzwiebeln, abgeglichen mit simuliertem Live-Bestand. Ein Artikel, Röstzwiebeln, zeigt niedrigen Bestand, möchtest du einen Ersatz, oder soll ich ihn trotzdem hinzufügen? Nichts landet in deinem Warenkorb, bevor du zustimmst.",
+        "steps": [
+          { "node": "Router", "desc": "Ordnet die Nachricht als Rezeptplanung ein" },
+          {
+            "node": "Rezeptplanungs-Agent",
+            "desc": "Zerlegt das Rezept in eine skalierte Zutatenliste"
+          },
+          {
+            "node": "Bestandsprüfung",
+            "desc": "Gleicht jede Zutat mit dem simulierten Katalog ab und schlägt Ersatz für knappe Artikel vor"
+          },
+          {
+            "node": "Human-in-the-loop-Pause",
+            "desc": "Wartet auf deine ausdrückliche Bestätigung, bevor der Warenkorb verändert wird"
+          },
+          { "node": "Warenkorb-Update", "desc": "Fügt die bestätigten Artikel hinzu (simuliert)" }
+        ]
+      },
+      {
+        "label": "Konversationelle Warenkorb-Bearbeitung",
+        "user": "Entferne die Zwiebeln, und mach die Tomaten 2 statt 1.",
+        "assistant": "Simulierte Demo: Zwiebeln entfernt, Tomatenmenge von 1 auf 2 geändert. Dein Warenkorb ist weiterhin nur ein Entwurf, es wurde noch nichts bestellt.",
+        "steps": [
+          { "node": "Router", "desc": "Ordnet die Nachricht als Warenkorb-Bearbeitung ein" },
+          {
+            "node": "Warenkorb-Agent",
+            "desc": "Wandelt die Anfrage in eine strukturierte, schema-validierte Operation um"
+          },
+          {
+            "node": "Warenkorb-Update",
+            "desc": "Wendet die Änderung auf den simulierten, serverseitigen Warenkorb an"
+          },
+          { "node": "Antwort", "desc": "Bestätigt genau, was sich geändert hat" }
+        ]
+      }
+    ],
+    "broke": [
+      {
+        "title": "Veralteter Zustand",
+        "body": "Zustand aus früheren Konversationsrunden blieb auf eine Art erhalten, die simulierte Tests nicht erfasst hatten, einmal löste das sogar den Warenkorb-Bestätigungsbildschirm bei leerem Warenkorb aus, weil ausstehende Einträge einer früheren Runde nie explizit geleert wurden. Die Behebung wurde zu einem Regressionstest, der später denselben Fehler in einem anderen Agenten-Knoten fand."
+      },
+      {
+        "title": "Fehlklassifizierung durch den Router",
+        "body": "Der Intent-Router schickte Nachrichten gelegentlich auf den falschen Pfad, etwa „Ich möchte [Produkt]“ zu Essensvorschlägen statt zur Warenkorb-Bearbeitung. Behoben mit einer expliziten Routing-Regel, statt darauf zu vertrauen, dass der LLM-Klassifizierer von allein richtig verallgemeinert."
+      },
+      {
+        "title": "JSON in Code-Blöcken",
+        "body": "Das LLM verpackte strukturierte Antworten gelegentlich in Markdown-Code-Blöcke, was das einfache JSON-Parsing brach, selbst mit expliziter Anweisung, das nicht zu tun. Zunächst behoben mit einem gemeinsamen Parsing-Helfer, später vollständig auf schema-validierte strukturierte Ausgaben für Warenkorb-Operationen umgestellt."
+      },
+      {
+        "title": "Nie verbundener Knoten",
+        "body": "Ein vollständig fertiggestellter Agenten-Knoten hatte nie erfolgreich ausgeführt: Er war mit einem Decorator verdrahtet, der für eine andere Funktionssignatur gedacht war, sodass jeder Aufruf still fehlschlug, bis er tatsächlich angebunden und zum ersten Mal ausgeführt wurde."
+      },
+      {
+        "title": "Lücken in der Fallback-Suche",
+        "body": "Eine einzelne fehlgeschlagene Katalogsuche, ein abweichendes Synonym oder eine Mengenangabe wie „250g“ in der Anfrage, führte früher einfach zum Abbruch. Behoben mit einer begrenzten, deterministischen Fallback-Sequenz, gedeckelt auf wenige Versuche, kein unbegrenztes Neuversuchen, eingebaut an jeder Stelle, an der der Katalog durchsucht wird."
+      },
+      {
+        "title": "Adressbindung",
+        "body": "Der Warenkorb bei Instamart ist an eine Lieferadresse gebunden, weshalb eine Adress-ID durch jeden Tool-Aufruf geführt werden musste, der Warenkorb, Suche oder Checkout betrifft, über alle Agenten hinweg, nicht nur einen. Eine verwandte Lücke zeigte sich später: Die Adressauswahl war nie tatsächlich mit der Oberfläche verbunden, sodass jede Runde stillschweigend die zuerst gespeicherte Adresse verwendete."
+      },
+      {
+        "title": "Annahmen aus Simulation vs. echtem Betrieb",
+        "body": "Die vollständig simulierte Testsuite lief sauber durch, aber der Test mit einem echten Schlüssel deckte Fehler auf, die die simulierten Tests strukturell nicht finden konnten, da sie unter denselben Annahmen geschrieben waren, die diese Fehler verursachten. Deshalb zählen sowohl simulierte Tests als auch Tests mit echtem Schlüssel: Der eine beweist, dass der Code tut, was ihm gesagt wurde, der andere, dass die Annahmen über die Außenwelt gestimmt haben."
+      }
+    ]
+  },
   "notes": {
     "title": "Technische Notizen",
     "description": "Kurze Beiträge zu technischen Entscheidungen und gelernten Lektionen."

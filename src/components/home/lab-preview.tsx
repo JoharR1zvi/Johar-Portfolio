@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
-import { Badge } from '@/components/ui/badge';
+import { LabDemoCard, type LabDemo } from '@/components/lab/lab-demo-card';
 import type { SiteSettings } from '@/lib/db/site-settings';
 
 export async function LabPreview({
@@ -11,9 +11,8 @@ export async function LabPreview({
   locale: string;
 }) {
   const t = await getTranslations({ locale, namespace: 'lab' });
-  const common = await getTranslations({ locale, namespace: 'common' });
 
-  const demos = [
+  const demos: LabDemo[] = [
     {
       href: '/lab/f1-explorer',
       title: t('f1ExplorerTitle'),
@@ -45,20 +44,7 @@ export async function LabPreview({
       <ul className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
         {demos.map((demo) => (
           <li key={demo.href}>
-            <Link
-              href={demo.href}
-              className="border-border bg-card text-card-foreground hover:border-foreground/30 flex flex-col gap-2 rounded-2xl border p-6 transition-colors"
-            >
-              {!demo.enabled ? (
-                <Badge variant="secondary" className="w-fit">
-                  {common('comingSoon')}
-                </Badge>
-              ) : null}
-              <h3 className="font-heading text-foreground text-lg font-semibold tracking-tight">
-                {demo.title}
-              </h3>
-              <p className="text-muted-foreground text-sm">{demo.description}</p>
-            </Link>
+            <LabDemoCard demo={demo} locale={locale} />
           </li>
         ))}
       </ul>

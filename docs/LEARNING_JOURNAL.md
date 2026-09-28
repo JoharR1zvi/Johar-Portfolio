@@ -421,6 +421,47 @@ have shown visitors a broken-looking error page instead of a calm
 "something went wrong, try again" message with the rest of the site
 (header, footer, navigation) still working normally around it.
 
+## Lesson 22: Reading the real source document instead of guessing what it probably says
+
+The interactive lab (the F1 pipeline explorer and the Swiggy assistant
+simulator) needed real, specific engineering detail to describe honestly:
+what actually broke while building the Swiggy assistant, and how it
+actually got fixed. The compressed summary in `CONTENT_FACTS.md` only had
+short category labels for this ("stale state," "router misclassification,"
+and so on) — enough to know _what kind_ of bug happened, not enough detail
+to write an honest, specific sentence about it without guessing.
+
+Rather than write plausible-sounding specifics and hope they were close to
+true, the actual original notes document (a Word file sitting locally,
+never uploaded anywhere) got read directly. A `.docx` file is secretly a
+zip archive full of XML, not a plain text file, so "reading" it meant
+unzipping it and stripping out the formatting tags to get at the real
+words underneath, the same real notes you originally wrote about your own
+project. That turned up much richer, already-true detail: real function
+and variable names, the actual mechanism behind each bug, not just a
+category label for it.
+
+That same read also caught two honest surprises worth knowing about,
+rather than silently picking a number and moving on:
+
+- Your Swiggy notes document says all 62 tests currently pass, but the
+  already-published project page says "55+". The newer document is
+  probably right, but changing a number that's already been reviewed and
+  published isn't something to just do quietly, so both numbers are now
+  written down side by side in `LAUNCH_CHECKLIST.md` for you to settle.
+- Your F1 project report document describes noticeably more finished work
+  than the site currently claims, a completed exploratory analysis and
+  three different trained models, though it never actually states a final
+  accuracy number. Since the site's own rule is "don't show unstable
+  results until they're confirmed," nothing from this got published
+  tonight, but it's flagged so you know it's there waiting for your
+  decision, not lost.
+
+The underlying lesson: when the real source of truth is sitting right
+there on disk, reading it directly beats writing something that merely
+sounds plausible, and finding a real discrepancy is worth surfacing
+honestly rather than quietly picking whichever number seems safer.
+
 ---
 
 _Next lessons (Phase 2 onward) will cover: what "embeddings" and vector

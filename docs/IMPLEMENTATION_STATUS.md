@@ -8,16 +8,16 @@ Tracks phase progress against the plan in the master prompt (section 24) and
 first push (see `DECISIONS.md`) so no local-only or tool-specific file ever
 touched the public repo.
 
-| Phase | Description                             | Status      | Notes                                                                                                                                              |
-| ----- | --------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0     | Audit and plan                          | Complete    | Repo audited, all decision docs written and committed                                                                                              |
-| 1     | Foundation and visual system            | Complete    | Next.js scaffold, design tokens, next-intl, global layout, tests all green                                                                         |
-| 2     | Content model and public portfolio      | Complete    | All public pages live and reading from the database. See "Live infrastructure issue" below — the Supabase project itself is currently unreachable. |
-| 3     | Admin application and AI project import | Not started | Blocked: needs Supabase + LLM/embedding provider keys. Highest complexity phase.                                                                   |
-| 4     | Interactive lab                         | Not started | Chat/Swiggy UI can start against a stub API before Phase 5 lands                                                                                   |
-| 5     | RAG backend                             | Not started | Blocked: needs LLM/embedding provider keys                                                                                                         |
-| 6     | GitHub, SEO, performance, polish        | Not started |                                                                                                                                                    |
-| 7     | QA and deployment                       | Not started | Blocked: needs Vercel project                                                                                                                      |
+| Phase | Description                             | Status                | Notes                                                                                                                                                              |
+| ----- | --------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0     | Audit and plan                          | Complete              | Repo audited, all decision docs written and committed                                                                                                              |
+| 1     | Foundation and visual system            | Complete              | Next.js scaffold, design tokens, next-intl, global layout, tests all green                                                                                         |
+| 2     | Content model and public portfolio      | Complete              | All public pages live and reading from the database. See "Live infrastructure issue" below — the Supabase project itself is currently unreachable.                 |
+| 3     | Admin application and AI project import | Not started           | Blocked: needs Supabase + LLM/embedding provider keys. Highest complexity phase.                                                                                   |
+| 4     | Interactive lab                         | Built, pending review | Both demos and the /lab index are built and pass verify; both stay behind their `site_settings` flags (`false`) until Johar reviews the content and flips them on. |
+| 5     | RAG backend                             | Not started           | Blocked: needs LLM/embedding provider keys                                                                                                                         |
+| 6     | GitHub, SEO, performance, polish        | Not started           |                                                                                                                                                                    |
+| 7     | QA and deployment                       | Not started           | Blocked: needs Vercel project                                                                                                                                      |
 
 ## Phase 0 checklist
 
@@ -97,6 +97,53 @@ just worked around): `src/app/[locale]/error.tsx` (a friendly, translated
 error boundary for any page-level data-fetch failure) and
 `getSiteSettings()` now fails soft to "both lab demos hidden" instead of
 throwing, since it only gates two optional badges, not real content.
+
+## Phase 4 checklist (built, pending review)
+
+Built entirely on static/mocked content, no database or LLM-provider key
+needed for any of it (matches the lab's own "mocked or sample data"
+description) — the only DB read either page makes is the `site_settings`
+enabled-flag check, which fails soft anyway. **Both flags stay `false`
+until Johar reviews the actual copy/UX below and flips them on** —
+nothing here is currently visible on the public site.
+
+- [x] `/lab` index — real content (was a placeholder), lists both demos via
+      a new shared `src/components/lab/lab-demo-card.tsx` (also now used by
+      the homepage's lab preview section, replacing its inlined duplicate
+      card markup)
+- [x] F1 Race Predictor Explorer (`/lab/f1-explorer`) — a 5-stage,
+      zero-JS `<details>` accordion (`src/components/lab/f1-pipeline.tsx`)
+      walking through the pipeline's already-approved stable facts from
+      `docs/CONTENT_FACTS.md`/the seeded case study (three data sources,
+      the ~100k-record → 1,838-row join fix, data-quality work,
+      leakage-aware `shift(1)` features, time-based validation). Explicitly
+      stops at "modelling: in progress" — no accuracy/ROC-AUC/best-model
+      claim, matching the non-negotiable content rule. Link to the GitHub
+      repo. See `LAUNCH_CHECKLIST.md` for a newly found local document that
+      suggests real modelling progress exists beyond this, pending Johar's
+      review.
+- [x] Swiggy Instamart Simulator (`/lab/swiggy-simulator`) — a deterministic,
+      fully client-side mocked walkthrough (`src/components/lab/swiggy-agent-simulator.tsx`)
+      of all 5 user-facing capabilities (pick one, see a scripted
+      user/assistant exchange and the graph nodes it routes through), plus
+      a "what broke and what I learned" section reusing the same 7
+      categories already approved in the published case study. No network
+      calls of any kind, matches the "never make live Swiggy calls from the
+      public site" rule by construction, not by a runtime check.
+- [x] Verified live in a browser (both languages, 375px/1440px, with the
+      flags temporarily forced on locally, then reverted): no layout
+      overflow, both interactive pieces work (Swiggy's 5 scenario buttons,
+      F1's accordion), zero console errors. Caught and fixed one real bug
+      in the process — a missing `nativeButton={false}` on the F1 page's
+      new GitHub-link button (Base UI, composing `Button` with an `<a>` via
+      `render` needs it, same class of bug already documented from Phase 1).
+- [ ] Johar reviews the built content/UX and decides whether to flip
+      `f1_explorer_enabled`/`swiggy_simulator_enabled` to `true` (requires
+      the Supabase outage above to be resolved first, to re-run the seed
+      script or update the row directly)
+- [ ] Chat UI against a stub API (deferred; Phase 5's actual RAG backend is
+      still blocked on Gemini/Groq keys, and the two demos above were the
+      higher-value use of unblocked time tonight)
 
 ## Known exceptions to the quality gate
 

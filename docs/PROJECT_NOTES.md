@@ -643,6 +643,112 @@ generally correct regardless of what caused this specific outage:
   page," precisely because it's the one query result that was already
   designed to have a safe default.
 
+## Phase 4: the interactive lab, built entirely offline from the database outage
+
+With Phase 2 closed out and the Supabase project still unreachable, Phase 4
+(the interactive lab) turned out to be exactly the right thing to build
+next: both of its demos are explicitly meant to run "on mocked or sample
+data" (already the copy in `messages/*.json` from Phase 1's placeholder
+work), so neither one needed the database at all beyond the existing
+`site_settings` enabled-flag check, which already fails soft. Everything
+else in this phase is static content and client-side-only interactivity.
+
+**Before writing any new copy, read the actual source documents instead of
+guessing.** `docs/CONTENT_FACTS.md` compresses both projects' real project
+notes (kept locally in `JoharInfo/`, gitignored) into short fact lists, and
+for the F1 pipeline stages, that compressed version was detailed enough to
+write from directly. For the Swiggy "what broke and what I learned"
+section, though, writing from the compressed category labels alone
+(`stale state`, `router misclassification`, etc.) would have meant
+inventing specific-sounding incident detail that wasn't actually
+confirmed anywhere. Rather than guess, the real
+`Swiggy Instamart Agent - Project Notes v2.docx` (a Word file — extracted
+by unzipping it and stripping the OOXML tags from `word/document.xml`,
+since it's a zip archive of XML under the hood, not plain text) was read
+directly. It turned out to already contain far more detail than the
+compressed summary: real function/variable names (`pending_items`,
+`pantry_node`, `@trace_node`, `parse_json_response()`), the actual
+mechanism behind each bug, and how each was fixed. The Lab simulator's
+"what broke" cards are built on the same 7 categories and the same claims
+already reviewed and published in the Swiggy case study
+(`supabase/seed/data/projects/swiggy.ts`), just with those real
+identifiers added back in for engineering flavor, not new unreviewed
+claims — consistency with an already-approved page beats inventing a
+fresh description from scratch.
+
+**That same source-reading turned up two real discrepancies, both flagged
+for Johar rather than silently resolved.** The Swiggy notes document (a
+"v2" file, meaning it likely postdates the master prompt) says all 62
+tests currently pass, while the published case study and every seeded
+metric say "55+" — CONTENT_FACTS.md's own precedence rules put the master
+prompt's figure above the project notes file, so "55+" is what's used
+everywhere tonight, with the discrepancy logged in
+`LAUNCH_CHECKLIST.md` for Johar to reconcile. Separately,
+`F1_Race_Predictor_Project_Report.docx` describes considerably more
+finished modelling work than the site currently shows: a full
+twelve-section EDA, three trained model classes (logistic regression,
+random forest, XGBoost), a defined primary target, and a time-based
+cross-validation scheme. It never states an actual accuracy or ROC-AUC
+_value_, so there was nothing concrete to leak even by accident, but the
+gap between "what this document describes" and "what the public case
+study says" is worth Johar's attention — also logged in
+`LAUNCH_CHECKLIST.md`, not acted on unilaterally, since
+`docs/CONTENT_FACTS.md` explicitly treats this document as a working
+draft pending his confirmation.
+
+**The demos themselves.** `/lab/f1-explorer` is a plain server-rendered
+accordion built on native `<details>`/`<summary>` elements — genuinely
+interactive (each stage expands/collapses) with zero client-side
+JavaScript, which is both simpler and more accessible than reaching for a
+client component and manual `useState` just to toggle visibility.
+`/lab/swiggy-simulator` does need a client component
+(`SwiggyAgentSimulator`): picking one of 5 scripted capability scenarios
+and re-rendering the conversation + agent-graph trace is genuine
+client-side state, not something `<details>` could express. Every
+scenario's user message, assistant reply, and list of graph nodes is a
+hardcoded, deterministic array baked into `messages/*.json` — there's no
+LLM call, no network request, and no Swiggy API anywhere in this
+component, which is what actually satisfies "never make live Swiggy calls
+from the public site" (a rule from `docs/DECISIONS.md`) by construction,
+not by a runtime permission check that could be bypassed or misconfigured
+later.
+
+**Both pages stay gated behind their existing `site_settings` flags,
+left `false`.** The flag-check happens inside each page itself, not just
+in the nav/homepage preview links pointing to it — so even someone who
+guesses or bookmarks the direct URL still sees the same "coming soon"
+placeholder as before, until Johar actually reviews this content and
+flips the flag himself. This mirrors the same review-before-publish
+principle already applied to project case-study content elsewhere in the
+codebase, just enforced through a boolean flag instead of a
+`review_status` column, since this content was never going to move
+through the CMS pipeline in the first place.
+
+**Verifying it live required temporarily working around the same database
+outage the pages are designed to tolerate.** Since both flags currently
+resolve to `false` (whether from real data or the outage's fail-soft
+fallback), the built content wouldn't actually render during a normal dev
+server run. `src/lib/db/site-settings.ts`'s `DEFAULTS` constant was
+edited to `true` for both flags just long enough to drive a headless
+browser at both languages and two viewport widths, then reverted
+immediately after. This turned up one genuine bug worth fixing before
+committing: the F1 page's new GitHub-link button, built by composing the
+shared `Button` component with a real `<a>` element via Base UI's
+`render` prop, needed an explicit `nativeButton={false}` — the exact same
+class of bug already documented in `IMPLEMENTATION_STATUS.md` from Phase
+1's header resume button, caught the same way both times: a real browser
+console, not type-checking or a unit test.
+
+**A small shared-component extraction happened along the way, not planned
+up front.** The homepage's lab-preview section already had its own inline
+card markup for the two demos; building the standalone `/lab` index page
+with the same two cards would have meant either a second near-identical
+copy of that markup or actually sharing it. `src/components/lab/lab-demo-card.tsx`
+is the extracted piece — same lesson as the `ProjectCard` and
+`SkillGroups` extractions from Phase 2: the first genuine second use of a
+piece of UI is usually what reveals which part of it was actually
+general-purpose.
+
 ## Standing habit from here on
 
 Three more documents are now maintained alongside this one, updated every

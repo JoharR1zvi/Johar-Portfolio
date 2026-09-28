@@ -9,9 +9,9 @@ version before going deeper.
 
 - **Name:** Personal Portfolio & AI Assistant Platform
 - **Type:** Personal project
-- **Status:** In progress (Phase 2 of 7 complete — reviewed project case
-  studies are live on the public site, pending a Supabase infrastructure
-  fix, see below)
+- **Status:** In progress (Phase 2 of 7 complete, Phase 4's interactive lab
+  built and pending my review — reviewed project case studies are live on
+  the public site, pending a Supabase infrastructure fix, see below)
 - **My role:** Sole designer and developer
 
 ## 2. The problem
@@ -87,6 +87,13 @@ rate-limited (5 messages per visitor per 10 minutes), with visitor IPs
 one-way hashed rather than stored raw, and emails a notification on every
 message. A downloadable resume PDF is still pending (no file exported and
 uploaded yet).
+
+Ahead of schedule, the interactive lab (Phase 4) is also built: an
+F1-pipeline explorer and a mocked Swiggy assistant simulator, both running
+entirely on static/scripted content with no live database or AI-provider
+dependency at all. Both stay hidden behind a feature flag until I review
+the content myself and turn them on, so nothing above is publicly visible
+yet.
 
 **Current blocker (infrastructure, not code):** the project's Supabase
 database has become unreachable (its hostname no longer resolves),

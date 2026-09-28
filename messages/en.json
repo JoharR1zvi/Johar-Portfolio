@@ -86,6 +86,156 @@
     "swiggySimulatorTitle": "Swiggy Instamart Simulator",
     "swiggySimulatorDescription": "Walk through the shopping assistant's agent graph on mocked catalog data."
   },
+  "labF1": {
+    "intro": "This is a deterministic walkthrough of the data pipeline behind the race predictor, not a live model demo. Nothing here is a final accuracy, ROC-AUC, or best-model claim, that project is still in progress.",
+    "stagesHeading": "The pipeline so far",
+    "repoCta": "View the repository on GitHub",
+    "stages": [
+      {
+        "title": "Three data sources, wrapped for resilience",
+        "body": "Three sources feed the pipeline: Jolpica (historical results and qualifying), FastF1 (telemetry and lap data), and OpenF1 (live-timing-style session data), integrated across the 2022–2025 seasons. All three integrations wrap caching, retry with exponential backoff, and rate-limit handling, so a flaky API response degrades gracefully instead of failing the whole pipeline outright."
+      },
+      {
+        "title": "From lap-level data to one race-entry table",
+        "body": "Roughly 100,000 lap-level records get processed into a 1,838-row race-entry master dataset, one row per driver per race. Combining the three sources this way first produced a many-to-many join explosion; fixed structurally with a bridge table, not a deduplication workaround."
+      },
+      {
+        "title": "Data quality, treated as first-class work",
+        "body": "Before the dataset was trustworthy enough to build features on, it needed real data-quality work: weather coverage reconciliation, qualifying-time parsing, boolean-flag restoration, and DNF-label correction. I treat this as a first-class part of the project, not a footnote."
+      },
+      {
+        "title": "Feature engineering without leaking the future",
+        "body": "Rolling-window features use shift(1), so a feature describing a driver's recent form only ever uses information from before the race it's predicting. Validation is time-based, not a random split, since a random split on time-series race data would silently let the model learn from future races when validating on past ones."
+      },
+      {
+        "title": "Modelling: in progress, on purpose",
+        "body": "Target definition, model choice, and final validated results are still in progress. No accuracy, ROC-AUC, or best-model claim is published here yet; I'd rather leave it out than present something unstable as final. Progress is visible in the GitHub repository."
+      }
+    ]
+  },
+  "labSwiggy": {
+    "intro": "This is a deterministic walkthrough of the Swiggy Instamart assistant's agent graph, not a live integration. Every message, catalog item, and price on this page is scripted and mocked, on purpose: the real project has been tested end-to-end against a live Swiggy developer key, but the public site never makes that call. Pick a capability to see how a message routes through the graph.",
+    "pickHeading": "Try a capability",
+    "mockedBadge": "Mocked",
+    "approvalBadge": "Waits for your approval",
+    "mockedNote": "Every catalog item, price, and reply above is scripted and mocked. No real Swiggy account, catalog, or purchase is involved.",
+    "brokeHeading": "What broke, and what I learned",
+    "scenarios": [
+      {
+        "label": "Meal suggestions",
+        "user": "What can I make for dinner tonight?",
+        "assistant": "Based on your recent orders, you're probably low on onions and paneer. Here are 3 quick dinner ideas: paneer butter masala with rice, a simple dal and roti, or a vegetable pulao. Want me to price the missing ingredients for any of these?",
+        "steps": [
+          { "node": "Router", "desc": "Classifies the message as a meal-suggestion request" },
+          {
+            "node": "Order history lookup",
+            "desc": "Infers what you probably have on hand from recent orders"
+          },
+          {
+            "node": "Meal-suggestion agent",
+            "desc": "Suggests meals and prices only the missing ingredients against the mocked catalog"
+          },
+          { "node": "Responder", "desc": "Drafts the reply. No cart changes yet." }
+        ]
+      },
+      {
+        "label": "Recurring grocery lists",
+        "user": "Create a list called Weekly Basics: milk and eggs, every Monday.",
+        "assistant": "Mocked demo: “Weekly Basics” (milk, large eggs) is scheduled for every Monday. When it's due, I'll surface it here for you to confirm or edit, I never order automatically.",
+        "steps": [
+          { "node": "Router", "desc": "Classifies the message as a recurring-list request" },
+          {
+            "node": "Semantic catalog match",
+            "desc": "Matches “large eggs” to a real catalog item even though the wording doesn't match exactly"
+          },
+          {
+            "node": "Scheduler",
+            "desc": "Registers a recurring job that checks whether the list is due"
+          },
+          { "node": "Responder", "desc": "Confirms the schedule back to you" }
+        ]
+      },
+      {
+        "label": "Photo & voice discovery",
+        "user": "[uploads a photo of an empty ketchup bottle] (mocked)",
+        "assistant": "That looks like tomato ketchup. I found 3 matches in the mocked catalog. Want me to add the 500g bottle?",
+        "steps": [
+          { "node": "Router", "desc": "Classifies the message as a discovery request" },
+          {
+            "node": "Photo/voice extraction",
+            "desc": "Extracts a product description from the image or voice note"
+          },
+          { "node": "Catalog search", "desc": "Searches the mocked catalog for matching products" },
+          { "node": "Responder", "desc": "Asks you to confirm the match before adding anything" }
+        ]
+      },
+      {
+        "label": "Recipe-to-cart planning",
+        "user": "I want to make biryani for 4 people.",
+        "assistant": "Mocked shopping list for biryani (serves 4): basmati rice, mixed vegetables, yogurt, biryani masala, and fried onions, checked against mocked live stock. One item, fried onions, is showing low stock, want a substitution, or should I add it anyway? Nothing goes into your cart until you approve.",
+        "steps": [
+          { "node": "Router", "desc": "Classifies the message as a recipe-planning request" },
+          {
+            "node": "Recipe-planning agent",
+            "desc": "Breaks the recipe into a scaled ingredient list"
+          },
+          {
+            "node": "Catalog availability check",
+            "desc": "Checks each ingredient against the mocked catalog and proposes substitutions for anything low in stock"
+          },
+          {
+            "node": "Human-in-the-loop pause",
+            "desc": "Waits for your explicit approval before touching the cart"
+          },
+          { "node": "Cart update", "desc": "Adds the approved items (mocked)" }
+        ]
+      },
+      {
+        "label": "Conversational cart editing",
+        "user": "Remove the onions, and make the tomatoes 2 instead of 1.",
+        "assistant": "Mocked demo: onions removed, tomato quantity changed from 1 to 2. Your cart is still just a draft, nothing is ordered yet.",
+        "steps": [
+          { "node": "Router", "desc": "Classifies the message as a cart-edit request" },
+          {
+            "node": "Cart-edit agent",
+            "desc": "Parses the request into a structured, schema-validated cart operation"
+          },
+          { "node": "Cart update", "desc": "Applies the change to the mocked, server-side cart" },
+          { "node": "Responder", "desc": "Confirms exactly what changed" }
+        ]
+      }
+    ],
+    "broke": [
+      {
+        "title": "Stale state",
+        "body": "Stale state carried over between conversation turns in ways mocked tests hadn't caught, once even triggering the cart-approval screen on an empty cart because a previous turn's pending items were never explicitly cleared. Fixing it became a regression test that later caught the identical bug in a different agent node."
+      },
+      {
+        "title": "Router misclassification",
+        "body": "The intent router occasionally sent a message down the wrong capability path, like routing “I want [product]” to meal suggestions instead of cart editing. Fixed with an explicit routing rule rather than relying on the LLM classifier to generalize correctly on its own."
+      },
+      {
+        "title": "Code-fenced JSON",
+        "body": "The LLM occasionally wrapped structured output in markdown code fences, breaking naive JSON parsing, even with an explicit instruction not to. Fixed with a shared parsing helper first, then moved cart operations to schema-validated structured output entirely."
+      },
+      {
+        "title": "Dead node wiring",
+        "body": "One fully-built agent node had never actually run successfully: it was wired up with a decorator meant for a different function signature, so every call to it crashed silently until it was actually connected and exercised for the first time."
+      },
+      {
+        "title": "Fallback search gaps",
+        "body": "A single failed catalog search, a synonym mismatch, or a quantity like “250g” in the query, used to just give up. Fixed with a bounded, deterministic fallback sequence, capped at a few attempts, no unbounded retrying, wired into every place the catalog gets searched."
+      },
+      {
+        "title": "Address binding",
+        "body": "Instamart's cart is bound to a delivery address, which meant threading an address ID through every tool call that touches cart, search, or checkout, across every agent, not just one. A related gap surfaced later: the address selector was never actually wired into the UI, so every turn silently used whichever saved address came first."
+      },
+      {
+        "title": "Mock-vs-live assumptions",
+        "body": "The fully mocked test suite passed cleanly, but testing against a real key surfaced bugs the mocks structurally couldn't catch, since the mocks were written under the same assumptions that caused those bugs. That's why both mocked tests and real-key testing matter: one proves the code does what it was told to, the other proves the assumptions about the outside world were right."
+      }
+    ]
+  },
   "notes": {
     "title": "Technical Notes",
     "description": "Short write-ups on engineering decisions and lessons learned."
