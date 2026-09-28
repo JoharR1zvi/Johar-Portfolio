@@ -12,12 +12,12 @@ touched the public repo.
 | ----- | --------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 0     | Audit and plan                          | Complete              | Repo audited, all decision docs written and committed                                                                                                              |
 | 1     | Foundation and visual system            | Complete              | Next.js scaffold, design tokens, next-intl, global layout, tests all green                                                                                         |
-| 2     | Content model and public portfolio      | Complete              | All public pages live and reading from the database. See "Live infrastructure issue" below — the Supabase project itself is currently unreachable.                 |
-| 3     | Admin application and AI project import | Not started           | Blocked: needs Supabase + LLM/embedding provider keys. Highest complexity phase.                                                                                   |
+| 2     | Content model and public portfolio      | Complete              | All public pages live and reading from the database. Supabase outage resolved, see below.                                                                          |
+| 3     | Admin application and AI project import | Not started           | Unblocked (Gemini/Groq keys set). Highest complexity phase — not yet started.                                                                                      |
 | 4     | Interactive lab                         | Built, pending review | Both demos and the /lab index are built and pass verify; both stay behind their `site_settings` flags (`false`) until Johar reviews the content and flips them on. |
-| 5     | RAG backend                             | Not started           | Blocked: needs LLM/embedding provider keys                                                                                                                         |
+| 5     | RAG backend                             | Not started           | Unblocked (Gemini/Groq keys set). Not yet started.                                                                                                                 |
 | 6     | GitHub, SEO, performance, polish        | SEO metadata done     | Per-page titles/descriptions, canonical/hreflang, sitemap.xml, robots.txt, Person JSON-LD. Performance/GitHub-polish items still open.                             |
-| 7     | QA and deployment                       | Not started           | Blocked: needs Vercel project                                                                                                                                      |
+| 7     | QA and deployment                       | Vercel live           | Deployed at `johar-portfolio.vercel.app`. Remaining acceptance criteria (LAUNCH_CHECKLIST.md) depend on Phase 3/5 and content finalization.                        |
 
 ## Phase 0 checklist
 
@@ -77,19 +77,24 @@ Notable bugs caught along the way (not regressions, just worth remembering — f
       re-verified live tonight because of the Supabase outage below, so
       re-check those once the database is back
 
-## Live infrastructure issue (found 2026-09-28, blocks everything above until fixed)
+## Live infrastructure issue (found 2026-09-28, resolved same day)
 
-The Supabase project (`hiiauzddkrfehrcnpzlh`) is currently unreachable —
-its hostname returns `NXDOMAIN` (does not resolve at all), not just a slow
-or erroring response. Confirmed this isn't a local network/sandbox
-restriction (`supabase.co` itself resolves fine; only this project's
-subdomain fails). Most likely cause: free-tier auto-pause after no API
-traffic since the 2026-08-01 seed run — but only checking the Supabase
-dashboard can confirm and fix it. **Action needed from Johar:** log into
-the Supabase dashboard, un-pause/restore the project (or confirm it needs
-recreating), then let this session know so the affected work can be
-verified live: the new projects-index filters, the header responsive fix,
-and a re-run of `npm run db:seed` if the flags below get flipped.
+The Supabase project (`hiiauzddkrfehrcnpzlh`) was unreachable for part of
+this session — its hostname returned `NXDOMAIN`, most likely a free-tier
+auto-pause after no API traffic since the 2026-08-01 seed run. **Resolved:**
+Johar restored it from the Supabase dashboard; DNS resolves, the REST API
+returns real data, and the full `test:e2e` suite (including the new
+accessibility checks) passes 13/13 against the live database. Everything
+built during the outage — the projects-index filters, the header
+responsive fix, the lab pages, SEO metadata — is confirmed working live.
+
+**Also resolved the same day:** a Vercel project is now linked and
+deployed at `https://johar-portfolio.vercel.app`, closing the Phase 7
+blocker below. `NEXT_PUBLIC_SITE_URL` is set in Vercel's Production
+environment variables to match; canonical/hreflang/sitemap URLs verified
+correct in production. Gemini and Groq API keys are also now set in
+`.env.local` (not yet added to Vercel's env vars — needed there too before
+Phase 3/5 features are deployed), unblocking Phase 3 and Phase 5.
 
 Two resilience improvements shipped alongside discovering this (real fixes
 worth keeping regardless of what caused tonight's specific outage, not
@@ -200,10 +205,9 @@ navigates through `/projects`, a database-backed route). Every other e2e
 test, including the new accessibility suite across every
 database-independent route, passes. Re-run once the database is restored.
 
-## True blockers (see `DECISIONS.md` for detail)
+## True blockers
 
-- **Supabase project unreachable** — see "Live infrastructure issue" above.
-  Needs Johar to check the dashboard. Blocks live verification of anything
-  database-backed, not just new phases.
-- LLM + embedding provider API keys (Gemini, Groq) — needed before Phase 3/5.
-- Vercel project — needed before Phase 7.
+None currently. ~~Supabase unreachable~~, ~~LLM/embedding provider keys~~,
+and ~~Vercel project~~ are all resolved as of 2026-09-28 — see "Live
+infrastructure issue" above. Phase 3 is unstarted but not blocked; it's
+simply the next, highest-complexity phase.
