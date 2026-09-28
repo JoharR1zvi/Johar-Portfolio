@@ -789,6 +789,65 @@ lists as public (name, title, city-level location, public email,
 GitHub/LinkedIn), so nothing here exposes anything not already visible
 elsewhere on the same page.
 
+## A routine dependency install turned up a critical, pre-existing vulnerability
+
+Installing `@axe-core/playwright` for the accessibility test below triggered
+a fresh `npm audit`, which reported a **critical unauthenticated RCE** in
+the exact-pinned `next@16.2.12` — present since Phase 1, unrelated to
+anything built tonight, just never resurfaced until something happened to
+trigger a fresh audit. Full writeup (the two advisories, the fix, the
+`shadcn` dependency misclassification also found in the process, and why
+`npm audit` now reports zero vulnerabilities) lives in `DECISIONS.md`
+rather than duplicated here — worth reading in full given the severity.
+The short version: upgraded `next` to `16.3.6`, matched
+`eslint-config-next`, moved `shadcn` (a dev-only CLI tool) out of
+`dependencies`, ran `npm audit fix` for the rest. `npm run verify` stayed
+green the whole way through.
+
+**Lesson worth internalizing**: a security audit's cleanliness is a
+point-in-time fact, not a standing guarantee — the correct trigger isn't
+"only after touching `package.json` on purpose," it's "after _any_
+`npm install`, even one that looks unrelated," since npm's own dependency
+resolution can shift transitive versions in ways that surface (or
+introduce) findings in packages nobody meant to touch.
+
+## Accessibility testing, finally wired up, immediately earned its keep
+
+`axe` was named in the locked tech stack from Phase 0 (`architecture.md`)
+but never actually installed. Added `e2e/accessibility.spec.ts`
+(`@axe-core/playwright`, WCAG 2 A/AA tags) across every route. First run:
+9 of 9 pages failed, all the same violation — `--secondary`/
+`--secondary-foreground` (the language switcher's active-state color,
+present in the header on literally every page) render at 3.21:1 contrast
+in light mode, against a 4.5:1 requirement. Computed the WCAG relative-
+luminance formula by hand to confirm the exact number axe reported (not
+just trusting the tool blindly), then used the same formula to check
+`--accent`/`--accent-foreground` too, since it's the same shape of
+light-background/white-text pairing — found an even worse 2.46:1, not
+currently rendered anywhere in real UI, but a live landmine for whichever
+component uses the `accent` variant first. Fixed both by changing only the
+light-mode `*-foreground` token to the same near-black already proven to
+work for dark mode's equivalent pairing (~5.9:1 contrast) — the actual
+brand colors (the blue, the teal) are untouched, only the text color
+sitting on top of them changed.
+
+Chasing the fix down a browser also surfaced a second, genuinely harder
+finding: on a page that throws hard enough to fail before any bytes
+stream (exactly what's happening site-wide right now, because of the
+database outage), Next.js discards the real document and substitutes its
+own minimal shell with **no `lang` attribute**, no matter what the app's
+layout sets. Added `src/app/global-error.tsx` (the documented Next.js
+mechanism for exactly this class of failure, which uniquely must define
+its own `<html>`/`<body>`) as a real, general improvement — but testing
+confirmed it doesn't fully close today's specific instance, since
+`[locale]/error.tsx` (not the true root) is what actually catches a
+Supabase-outage error, and that boundary has the same structural
+limitation. A full fix needs per-section error handling (Suspense
+boundaries with individual fallbacks instead of one page-wide throw),
+which is real Phase 6/7 architecture work, not attempted blind tonight
+without a working database to verify the happy path against. Documented
+in `DECISIONS.md`, not silently dropped.
+
 ## Standing habit from here on
 
 Three more documents are now maintained alongside this one, updated every

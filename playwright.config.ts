@@ -13,7 +13,12 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
     command: 'npm run build && npm run start',
-    url: 'http://localhost:3000',
+    // Deliberately not the homepage: readiness should prove the Next.js
+    // process itself is up, not that the database is reachable. /robots.txt
+    // is a static, dependency-free route (see src/app/robots.ts) that
+    // always returns 200, so a database outage can't block every e2e run
+    // from even starting.
+    url: 'http://localhost:3000/robots.txt',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

@@ -66,11 +66,11 @@
   --primary: #5b5ce2;
   --primary-foreground: #ffffff;
   --secondary: #4f8cff;
-  --secondary-foreground: #ffffff;
+  --secondary-foreground: #0b1020;
   --muted: #eef0f7;
   --muted-foreground: #5f6b7a;
   --accent: #19b8b0;
-  --accent-foreground: #ffffff;
+  --accent-foreground: #0b1020;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
   --border: rgba(13, 19, 33, 0.1);

@@ -484,6 +484,54 @@ block of structured data on the homepage that helps a search engine
 understand "this page is about a person named Johar Rizvi, here's his
 job title and where to find him," rather than having to guess.
 
+## Lesson 24: A routine "install one small tool" turned up a serious, pre-existing hole
+
+Adding a testing tool tonight (something to automatically check the site
+for accessibility problems) meant running `npm install`, which, as a
+side effect, always re-checks every package in the project for known
+security problems. That side-effect check found something serious and
+completely unrelated to the tool being installed: the exact version of
+Next.js (the framework this whole site runs on) locked into this project
+since the very first week had a **critical security hole**, one serious
+enough that, if this site were live with that version, someone could
+potentially run their own code on the server hosting it. This had been
+sitting there the whole time; it just took a fresh check to notice it,
+since nothing had run that check again since Phase 1.
+
+Fixed by upgrading to the latest safe version, plus one more small
+cleanup: a code-generator tool (used only by you, only while building the
+site, never touched by an actual visitor) had been accidentally listed as
+something the live site itself depends on, rather than as a
+developer-only tool. Moving it to the correct category made a handful of
+other minor warnings disappear too, since they were all coming from that
+one tool's own dependencies. After all of that, a full security check of
+every package in the project now comes back completely clean.
+
+The lesson to actually remember: a clean security check from weeks ago
+doesn't mean things are still clean today. New vulnerabilities get
+discovered in existing software all the time, so the check needs to be
+re-run regularly, not just once and forgotten.
+
+## Lesson 25: A tool for checking accessibility immediately found a real, sitewide bug
+
+The site was always meant to include automated accessibility checking
+(making sure the site genuinely works for people using screen readers,
+keyboard-only navigation, or who have trouble seeing low-contrast text),
+but that checking tool had never actually been installed. Adding it
+tonight and running it for the first time found a real problem on
+literally every single page: the small "EN"/"DE" language-switch button
+in the header, when showing which language you're currently on, uses
+white text on a blue background that doesn't have enough contrast for
+some people to comfortably read. Not a huge, dramatic bug, but a real one
+that a blind automated check catches instantly, and a human skimming the
+page casually might never notice, especially with normal eyesight in
+good lighting.
+
+The fix: change the text color for that state from white to a very dark
+near-black, keeping the exact same blue background. It's a small palette
+tweak, not a redesign; the same shade of blue on a badge or button, just
+readable text on top of it now.
+
 ---
 
 _Next lessons (Phase 2 onward) will cover: what "embeddings" and vector

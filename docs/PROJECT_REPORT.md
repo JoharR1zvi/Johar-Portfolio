@@ -63,7 +63,10 @@ A bilingual (English/German) web application with:
   tests, and a production build — run and must pass before any phase of
   work is considered complete.
 - Two layers of automated testing: component-level tests and full
-  browser end-to-end tests that simulate a real visitor using the site.
+  browser end-to-end tests that simulate a real visitor using the site,
+  including automated accessibility checks (WCAG 2.2 AA) on every page.
+- Dependency security audited on every install, not just periodically —
+  caught and fixed a critical vulnerability in a pinned framework version.
 - Deliberate privacy handling: sensitive personal source documents are
   excluded from version control from the very first commit, before any
   other file was added.

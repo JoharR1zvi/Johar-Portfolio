@@ -170,15 +170,35 @@ per-page `generateMetadata` everywhere:
 - [x] `src/components/seo/person-json-ld.tsx` — schema.org Person on the
       homepage, built only from fields already public per
       `docs/CONTENT_FACTS.md`
+- [x] Security: upgraded `next` (16.2.12 → 16.3.6, fixes a critical RCE
+      advisory that predates tonight) and `eslint-config-next` to match,
+      bumped the `sharp` override, reclassified `shadcn` as a
+      devDependency (it's dev-tool-only, was incorrectly shipped under
+      `dependencies`). `npm audit` now reports **zero** vulnerabilities —
+      see `docs/DECISIONS.md` for the full writeup, this also retires the
+      old Phase 1 eslint-chain exception below.
+- [x] Accessibility: `e2e/accessibility.spec.ts` (axe-core, `wcag2a`/
+      `wcag2aa`) across every route. Found and fixed a real sitewide color-
+      contrast failure (`--secondary`/`--accent` foreground tokens in light
+      mode); added `src/app/global-error.tsx` for a related but distinct
+      `html-has-lang` gap on the framework's error-recovery shell — see
+      `docs/DECISIONS.md` for what that does and doesn't fully cover.
 - [ ] Everything else in Phase 6: GitHub profile README/pin, performance
       budget pass, remaining polish
 
 ## Known exceptions to the quality gate
 
-`npm run verify` passes clean as of Phase 1. The one standing exception is
-the `npm audit` finding confined to `eslint`'s own dependency chain
-(devDependency only, not shipped) — see `docs/DECISIONS.md` for detail and
-what would resolve it.
+`npm run verify` passes clean. `npm audit` is now clean too (zero
+vulnerabilities, see `docs/DECISIONS.md`) — the previous standing
+exception here (an `eslint` dependency chain finding) no longer applies;
+that chain doesn't exist in the current resolved dependency tree.
+
+`npm run test:e2e` currently has 2 known, expected failures, both tracing
+directly to the Supabase outage above, not a code defect: the case-study
+page's accessibility check and the language-switcher test (which
+navigates through `/projects`, a database-backed route). Every other e2e
+test, including the new accessibility suite across every
+database-independent route, passes. Re-run once the database is restored.
 
 ## True blockers (see `DECISIONS.md` for detail)
 

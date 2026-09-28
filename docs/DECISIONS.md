@@ -65,33 +65,89 @@ Johar wants to work through this collaboratively, not have every phase run unatt
 - No LLM/embedding provider API key created yet (Gemini/Groq) — blocks Phase 3 and Phase 5, not Phase 0/1/2 UI shells.
 - No Vercel project linked yet — blocks only the final Phase 7 deploy step.
 
-## Known exception: eslint dependency chain audit findings (Phase 1)
+## Security: critical Next.js RCE found and fixed, npm audit now clean (Phase 4/6)
 
-`npm audit` reports 9 high-severity findings, all confined to one chain:
-`eslint@9.x` → `minimatch@3.x` → `brace-expansion@1.1.18` (a DoS-via-unbounded-expansion
-advisory). This chain is pulled in transitively by `eslint-config-next`'s bundled
-`eslint-plugin-import`/`eslint-plugin-jsx-a11y`/`eslint-plugin-react`, which do not
-yet support ESLint 10 — confirmed by testing: upgrading to `eslint@10.8.0` throws
-`TypeError: contextOrFilename.getFilename is not a function` inside
-`eslint-plugin-react`'s `react/display-name` rule (an internal ESLint 10 API
-that plugin hasn't adapted to yet).
+While installing `@axe-core/playwright` for accessibility testing, a routine
+`npm audit` turned up a **critical, unauthenticated remote-code-execution
+advisory in the pinned Next.js version** (`next@16.2.12`, pinned since
+Phase 1): [GHSA-p293-qw3h-jr36](https://github.com/advisories/GHSA-p293-qw3h-jr36)
+(Windows-hosted RCE) and [GHSA-2xp9-vwfh-vxw4](https://github.com/advisories/GHSA-2xp9-vwfh-vxw4)
+(RCE via the Image Optimization API with AVIF files), plus a related `sharp`
+libvips advisory. This predates tonight's session entirely — it was sitting
+in the exact-pinned version the whole time, only surfaced now because
+installing a new package triggered a fresh audit. **Fixed**: upgraded to
+`next@16.3.6` (latest stable at the time) and `eslint-config-next@16.3.6` to
+match (per the standing rule of re-checking `eslint-config-next` on every
+Next upgrade), bumped the `sharp` override to `^0.35.5`. `npm run verify`
+confirmed clean after the upgrade — no code changes were needed.
 
-Accepted as a documented exception because: it's a devDependency only (never
-shipped to the browser or the server runtime), the vulnerability is a
-linter-process DoS reachable only by feeding malicious input to `eslint`
-itself (not part of this app's attack surface), and the only available "fix"
-(`npm audit fix --force`) would either downgrade `next` to `9.3.3` or break
-linting outright. **Revisit when `eslint-config-next` publishes a release
-compatible with ESLint 10** — re-run `npm audit` after every `eslint-config-next`
-upgrade to check.
+That same audit pass also surfaced `hono`/`qs`/`fast-uri` findings traced to
+`shadcn` (the shadcn/ui component-generator CLI), which was misclassified
+under `dependencies` instead of `devDependencies` — it's a dev-time code
+generator (`npx shadcn add ...`), never imported or run by the actual
+application at runtime, the same category of tool as `tailwindcss`,
+`eslint`, or the Supabase CLI, all of which were already correctly
+classified as dev-only. Moved it. Combined with a plain `npm audit fix`
+(no `--force`, so no breaking major-version bumps) for the remaining
+`js-yaml`/`nanoid`/`@vitest/mocker` findings, **`npm audit` now reports zero
+vulnerabilities** — which also fully resolves the Phase 1 `eslint`/`minimatch`/
+`brace-expansion` exception previously documented here; that chain no longer
+exists in the resolved dependency tree (`eslint-config-next@16.3.6`'s own
+updated dependencies moved past it). The `postcss`/`sharp` `overrides` from
+Phase 1 stay in place, now at `sharp@^0.35.5`.
 
-Two related nested-dependency findings _were_ fixed via `package.json`
-`overrides` (not accepted as exceptions): `postcss` (bundled inside `next`,
-pinned to a version with a CSS-stringify XSS / source-map path-traversal
-advisory) forced to `^8.5.25`, and `sharp` (used by `next/image`, has
-libvips CVEs in the pinned version — relevant since admin-uploaded project
-images will flow through it later) forced to `^0.35.3`. Both verified
-installed and deduped correctly after a clean reinstall.
+**Lesson for future dependency work**: an `npm install` for one small,
+unrelated devDependency can silently surface (or introduce, via lockfile
+re-resolution) findings in completely unrelated packages — always run a full
+`npm audit` after any install, not just for the package just added, and
+don't assume a clean audit from a prior session is still accurate weeks
+later.
+
+## Accessibility: sitewide color-contrast bug found and fixed (Phase 6)
+
+Added `e2e/accessibility.spec.ts` (axe-core via `@axe-core/playwright`,
+`wcag2a`/`wcag2aa` tags) — accessibility was a locked stack decision
+(`architecture.md` lists `axe` alongside Vitest/Playwright) that had never
+actually been wired up. First run found a real, sitewide WCAG 2 AA
+color-contrast failure: the `--secondary`/`--secondary-foreground` design
+tokens (`#4f8cff` background, `#ffffff` text, light mode only) render at a
+3.21:1 contrast ratio against a 4.5:1 requirement — computed by hand and
+confirmed by axe. This is the active-state color for the header's language
+switcher (present on every single page) and the `secondary` `Badge`/`Button`
+variant used for "coming soon" labels elsewhere. Manually computing the same
+formula for `--accent`/`--accent-foreground` (`#19b8b0` / `#ffffff`) found
+an even worse ratio (2.46:1) — not currently exposed anywhere in rendered
+UI (no component uses the `accent` variant yet), but a latent bug waiting
+for whoever uses it next. **Fixed both** by changing only the light-mode
+`*-foreground` values to `#0b1020` (the same near-black already used
+successfully as dark mode's `--secondary-foreground`/`--primary-foreground`,
+confirmed via the same contrast formula to reach ~5.9:1) — the background
+colors themselves (the actual brand blue/teal) are untouched, so the visual
+palette doesn't change, only which text color sits on top of it. Re-ran the
+full accessibility suite after the fix: zero contrast violations remain on
+any tested page.
+
+Chasing this down also surfaced a real, separate, harder problem: on a page
+that throws (tonight, because of the Supabase outage below), Next.js's
+production error-recovery path replaces the entire document with its own
+minimal `<html id="__next_error__">` shell that has **no `lang` attribute
+at all**, regardless of what the app's own layout sets — a genuine
+`html-has-lang` WCAG failure, but only when a page fails hard enough that no
+bytes have streamed yet. Added `src/app/global-error.tsx` (the Next.js
+convention specifically for errors the root layout itself can't recover
+from, which must define its own `<html>`/`<body>`) as a correct, general
+resilience improvement — verified via `npm run build` that it doesn't
+regress anything. It does **not** fully close this specific gap, though:
+testing confirmed the `[locale]/error.tsx` boundary (not the true root) is
+what's actually catching tonight's DB-outage errors, and that boundary
+still can't set `lang` on Next's fallback shell either, since the error
+occurs before the real layout's `<html>` tag ever gets to stream. Properly
+fixing that would mean restructuring data fetching to fail per-section
+(e.g. Suspense boundaries with individual fallbacks) rather than
+page-wide, an architectural change deliberately not attempted blind,
+tonight, against a database that's down and can't be used to verify the
+happy path still works. Documented here rather than either ignored or
+half-fixed.
 
 ## GitHub repo and the no-AI-attribution constraint (Phase 1)
 
