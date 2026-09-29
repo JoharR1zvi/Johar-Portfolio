@@ -219,3 +219,59 @@ resolved while writing the actual SQL:
   is crackable by brute force since the whole address space is only ~4
   billion values; the secret key makes that infeasible while still giving
   a stable per-visitor identifier to rate-limit against.
+
+## Phase 3c: AI import workflow schema — written, not yet applied
+
+`supabase/migrations/0005_ai_import_workflow.sql` implements the "AI
+project-import workflow" and "Deterministic change detection" table
+groups `docs/architecture.md` already named
+(`project_source_documents`, `project_import_jobs`,
+`project_extracted_facts`, `project_content_drafts`,
+`project_content_provenance`, `project_document_revisions`,
+`project_change_sets`, `project_change_items`) plus a private Storage
+bucket for uploaded source documents. That summary named the tables and
+their rough purpose, not concrete columns/types/constraints — turning it
+into real DDL required several genuine judgment calls, flagged here for
+Johar to review (and correct, if any of them are wrong) before this
+migration actually gets applied to the live database:
+
+- **A document's `project_id` is required, never nullable.** Uploading a
+  source document for a brand-new project means creating a minimal
+  placeholder project first (slug only, unpublished), not threading an
+  optional project reference through every downstream table. Simpler
+  schema, at the cost of "create the project" being a small separate step
+  before "upload its first document" rather than one combined action.
+- **What a "document revision" actually is.** The architecture summary
+  named `project_document_revisions` without saying what a revision
+  actually captures. Implemented as: a checkpoint recorded when an import
+  job's reviewed output gets published, holding a full JSON snapshot of
+  the project's approved field values at that point. This is what makes
+  "previous published revisions remain recoverable" (a launch-checklist
+  requirement) concrete, and gives a later `update_compare` job something
+  real to diff against (`baseline_revision_id`) instead of just "whatever
+  happens to be live right now." An alternative reading — a revision of
+  the _uploaded document itself_ (e.g. re-uploading a corrected file) —
+  was also plausible from the summary alone; went with the
+  project-content-snapshot interpretation because it's what the
+  update/compare workflow (3f) actually needs to function, and because
+  `project_source_documents` already tracks each individual upload on its
+  own.
+- **RLS enabled inline with each table, not deferred to a later
+  migration.** Phase 2 split schema (0002/0003) from policies (0004)
+  across separate migrations, applied together in one sitting before
+  anything was live. Doing that again now, with the site already
+  deployed, would leave these tables briefly exposed with no access
+  control at all if the two migrations were ever applied out of step —
+  so this one migration creates each table and locks it down in the same
+  block. Every table here is 100% admin-only (`is_admin()`-gated, no
+  public policy at all, matching `project_content_provenance`'s explicit
+  "never public, never indexed" requirement from the architecture
+  summary) — nothing added here changes what any public page or the RAG
+  assistant can see.
+
+**Deliberately not run yet.** `supabase db push` was not run against the
+live database — writing the schema is squarely "doesn't need Johar's
+input" work, but applying a schema with this many interpretive calls
+baked in, unreviewed, to the live production database is a different
+kind of action, and it directly shapes how 3d–3f get built next. Review
+the file (or this summary) and say go before it's applied.

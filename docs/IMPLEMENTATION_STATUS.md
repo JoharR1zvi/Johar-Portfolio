@@ -25,42 +25,55 @@ for real once Phase 3/5 ships a route that uses them.
 and signed in for real at `/admin/login` (2026-09-29) — 3a is fully
 confirmed, not just code-reviewed.
 
-**Waiting on Johar, not blocking further work:**
+**Waiting on Johar — in priority order:**
 
-- Review `/lab/f1-explorer` and `/lab/swiggy-simulator`, then flip them on
-  yourself at `/admin/settings` (built tonight — no need to ask this
-  session to touch the database directly anymore).
-- Quick manual check on that same settings page: flip a toggle, refresh,
-  confirm it stuck. The write path couldn't be verified live from this
-  session (see the Phase 3 checklist below for why), so this is the one
-  real gap before calling 3b's settings piece fully done.
-- Johar confirmed (2026-09-29) **both the F1 predictor and Swiggy
-  assistant are finished projects** — current site copy still frames F1
-  as "in progress, no metrics" and Swiggy as "55+ tests" (see
-  `LAUNCH_CHECKLIST.md` for the exact discrepancies already found in his
-  local docs). He'll upload newer/finished source documents for both
-  later; when they arrive, re-parse into `CONTENT_FACTS.md` following its
-  existing precedence rules, then update the seed data
-  (`supabase/seed/data/projects/{f1-predictor,swiggy}.ts`), the published
-  case studies, and the Lab explorer/simulator copy to match — don't
-  update just one of those places and leave the others stale.
+1. **Review the Phase 3c AI-import schema** (`docs/DECISIONS.md`'s "Phase
+   3c" section, or the migration file itself at
+   `supabase/migrations/0005_ai_import_workflow.sql`) and say go before
+   it's applied. Several genuine judgment calls went into turning
+   `architecture.md`'s table-group summary into real DDL — flagged
+   individually in that section. **Not yet applied to the live
+   database** (`supabase db push` deliberately not run) — 3d onward
+   builds directly on top of this, so it's worth getting right first.
+2. Quick manual checks, now that three admin CRUD areas exist
+   (settings/projects/notes): open each, save something, confirm it
+   sticks. None of the actual authenticated write paths could be verified
+   live from this session (a minted-session test was attempted for the
+   first one and abandoned as not worth the time — see the Phase 3
+   checklist below) — everything's verified up to "the guard redirects
+   correctly and the code is right," not "a real save actually happened."
+3. Review `/lab/f1-explorer` and `/lab/swiggy-simulator`, then flip them
+   on yourself at `/admin/settings` (no need to ask this session to touch
+   the database directly anymore).
+4. Upload the newer F1/Swiggy source documents whenever ready (confirmed
+   2026-09-29 both projects are finished; current site copy still says
+   otherwise — see `LAUNCH_CHECKLIST.md` for the exact discrepancies
+   already found in the older local docs). When they arrive: re-parse
+   into `CONTENT_FACTS.md`, then update the seed data
+   (`supabase/seed/data/projects/{f1-predictor,swiggy}.ts`), the
+   published case studies, and the Lab explorer/simulator copy together,
+   not just one of those places.
 
-**Phase 3 is underway**, broken into checkpoints (3a–3f, full breakdown in
-the Phase 3 checklist below). 3a is done and confirmed live. 3b's settings
-piece is built (pending the manual check above). Continuing into the rest
-of 3b (projects/translations/media/notes CRUD) — pure code work, doesn't
-need Johar's input, so it's proceeding without waiting on him.
+**Phase 3 progress this stretch**: 3a done and confirmed live. 3b built
+three admin CRUD areas (settings, projects+translations, notes) —
+deliberately left out sections/metrics/technologies (projects) and media
+upload (needs real Storage infrastructure, a separate slice) for later.
+3c's schema is written but not applied (see above). All of this was pure
+code/schema work that didn't need Johar's input, per his own instruction
+to keep going on what didn't need him while he was away — 3d onward
+(the actual extraction pipeline) is a natural stopping point until the
+schema's reviewed.
 
-| Phase | Description                             | Status                             | Notes                                                                                                                                                              |
-| ----- | --------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 0     | Audit and plan                          | Complete                           | Repo audited, all decision docs written and committed                                                                                                              |
-| 1     | Foundation and visual system            | Complete                           | Next.js scaffold, design tokens, next-intl, global layout, tests all green                                                                                         |
-| 2     | Content model and public portfolio      | Complete                           | All public pages live and reading from the database. Supabase outage resolved, see below.                                                                          |
-| 3     | Admin application and AI project import | In progress (3a, 3b settings done) | Auth foundation confirmed live. Settings page built. CRUD (projects/translations/media/notes) underway, no Johar input needed for it.                              |
-| 4     | Interactive lab                         | Built, pending review              | Both demos and the /lab index are built and pass verify; both stay behind their `site_settings` flags (`false`) until Johar reviews the content and flips them on. |
-| 5     | RAG backend                             | Not started                        | Unblocked (Gemini/Groq keys set). Not yet started.                                                                                                                 |
-| 6     | GitHub, SEO, performance, polish        | SEO metadata done                  | Per-page titles/descriptions, canonical/hreflang, sitemap.xml, robots.txt, Person JSON-LD. Performance/GitHub-polish items still open.                             |
-| 7     | QA and deployment                       | Vercel live                        | Deployed at `johar-portfolio.vercel.app`. Remaining acceptance criteria (LAUNCH_CHECKLIST.md) depend on Phase 3/5 and content finalization.                        |
+| Phase | Description                             | Status                | Notes                                                                                                                                                              |
+| ----- | --------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0     | Audit and plan                          | Complete              | Repo audited, all decision docs written and committed                                                                                                              |
+| 1     | Foundation and visual system            | Complete              | Next.js scaffold, design tokens, next-intl, global layout, tests all green                                                                                         |
+| 2     | Content model and public portfolio      | Complete              | All public pages live and reading from the database. Supabase outage resolved, see below.                                                                          |
+| 3     | Admin application and AI project import | In progress (3a–3c)   | Auth confirmed live. Settings/projects/notes CRUD built. AI-import schema written, awaiting review before it's applied — see "Where we left off" above.            |
+| 4     | Interactive lab                         | Built, pending review | Both demos and the /lab index are built and pass verify; both stay behind their `site_settings` flags (`false`) until Johar reviews the content and flips them on. |
+| 5     | RAG backend                             | Not started           | Unblocked (Gemini/Groq keys set). Not yet started.                                                                                                                 |
+| 6     | GitHub, SEO, performance, polish        | SEO metadata done     | Per-page titles/descriptions, canonical/hreflang, sitemap.xml, robots.txt, Person JSON-LD. Performance/GitHub-polish items still open.                             |
+| 7     | QA and deployment                       | Vercel live           | Deployed at `johar-portfolio.vercel.app`. Remaining acceptance criteria (LAUNCH_CHECKLIST.md) depend on Phase 3/5 and content finalization.                        |
 
 ## Phase 0 checklist
 
@@ -232,8 +245,20 @@ its size and complexity:
 - [ ] 3b (remaining) — media upload (needs a Storage bucket + policies,
       genuinely new infrastructure, not just another CRUD table — a
       separate slice from the rest of 3b)
-- [ ] 3c — AI import schema migration (source documents, import jobs,
-      extracted facts, content drafts, provenance, document revisions)
+- [x] 3c — **schema written, not yet applied.**
+      `supabase/migrations/0005_ai_import_workflow.sql`: source documents,
+      import jobs, extracted facts, content drafts, provenance, document
+      revisions, change sets/items, plus a private Storage bucket for
+      uploads. Every table is `is_admin()`-gated, RLS enabled inline (not
+      deferred to a later migration the way Phase 2 did it — see
+      `docs/DECISIONS.md` for why that split isn't safe to repeat now that
+      the site's live). Turning `architecture.md`'s table-group summary
+      into real columns/types/constraints required genuine judgment
+      calls (what a "document revision" actually stores, in particular) —
+      all flagged in `docs/DECISIONS.md`'s new Phase 3c section.
+      **`supabase db push` deliberately not run** — needs Johar to review
+      the design (or the DECISIONS.md summary of it) before it's applied
+      to the live database, since 3d–3f get built directly on top of it.
 - [ ] 3d — upload + extraction pipeline (PDF/DOCX/MD parsing, Gemini
       structured extraction, Zod-validated, versioned prompts)
 - [ ] 3e — review/approve → publish UI
