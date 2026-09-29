@@ -21,12 +21,19 @@ says he's also added them to Vercel's Production env vars — not yet
 independently verified (no deployed route exercises them yet). Confirm
 for real once Phase 3/5 ships a route that uses them.
 
+**Admin account is live.** Johar created it, ran `npm run admin:create`,
+and signed in for real at `/admin/login` (2026-09-29) — 3a is fully
+confirmed, not just code-reviewed.
+
 **Waiting on Johar, not blocking further work:**
 
-- Review `/lab/f1-explorer` and `/lab/swiggy-simulator` (force
-  `site_settings` flags true locally to preview, or ask this session to)
-  and flip `f1_explorer_enabled`/`swiggy_simulator_enabled` to `true` in
-  Supabase when ready to make them public.
+- Review `/lab/f1-explorer` and `/lab/swiggy-simulator`, then flip them on
+  yourself at `/admin/settings` (built tonight — no need to ask this
+  session to touch the database directly anymore).
+- Quick manual check on that same settings page: flip a toggle, refresh,
+  confirm it stuck. The write path couldn't be verified live from this
+  session (see the Phase 3 checklist below for why), so this is the one
+  real gap before calling 3b's settings piece fully done.
 - Johar confirmed (2026-09-29) **both the F1 predictor and Swiggy
   assistant are finished projects** — current site copy still frames F1
   as "in progress, no metrics" and Swiggy as "55+ tests" (see
@@ -38,36 +45,22 @@ for real once Phase 3/5 ships a route that uses them.
   case studies, and the Lab explorer/simulator copy to match — don't
   update just one of those places and leave the others stale.
 
-**Phase 3 is underway.** Broken into checkpoints (see the Phase 3 checklist
-below for the full breakdown: 3a–3f). **3a (admin auth foundation) is done**
-and passes `npm run verify` — see that checklist for what was built and how
-it was tested. It could only be tested up to the point of "wrong password is
-correctly rejected," though: no admin account exists yet.
+**Phase 3 is underway**, broken into checkpoints (3a–3f, full breakdown in
+the Phase 3 checklist below). 3a is done and confirmed live. 3b's settings
+piece is built (pending the manual check above). Continuing into the rest
+of 3b (projects/translations/media/notes CRUD) — pure code work, doesn't
+need Johar's input, so it's proceeding without waiting on him.
 
-**Action needed from Johar to unblock 3a → 3b:**
-
-1. Create the admin's Supabase Auth account: dashboard → Authentication →
-   Users → Add user. Enter an email + password directly (skip "send
-   invite" if offered) — the password never needs to touch this codebase
-   or this session.
-2. Run `npm run admin:create -- your@email.com` (uses the secret key to
-   look the user up and register them in `admin_users` — see
-   `scripts/create-admin.ts`).
-3. Sign in at `/admin/login` locally (or on Vercel) to confirm.
-
-Once that's done, next up is 3b (admin CRUD for projects/translations/
-media/notes/settings) — see the Phase 3 checklist below for the rest.
-
-| Phase | Description                             | Status                | Notes                                                                                                                                                              |
-| ----- | --------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 0     | Audit and plan                          | Complete              | Repo audited, all decision docs written and committed                                                                                                              |
-| 1     | Foundation and visual system            | Complete              | Next.js scaffold, design tokens, next-intl, global layout, tests all green                                                                                         |
-| 2     | Content model and public portfolio      | Complete              | All public pages live and reading from the database. Supabase outage resolved, see below.                                                                          |
-| 3     | Admin application and AI project import | In progress (3a done) | Auth foundation built and verified. Blocked on Johar creating the admin account (see above) before 3b (CRUD) starts.                                               |
-| 4     | Interactive lab                         | Built, pending review | Both demos and the /lab index are built and pass verify; both stay behind their `site_settings` flags (`false`) until Johar reviews the content and flips them on. |
-| 5     | RAG backend                             | Not started           | Unblocked (Gemini/Groq keys set). Not yet started.                                                                                                                 |
-| 6     | GitHub, SEO, performance, polish        | SEO metadata done     | Per-page titles/descriptions, canonical/hreflang, sitemap.xml, robots.txt, Person JSON-LD. Performance/GitHub-polish items still open.                             |
-| 7     | QA and deployment                       | Vercel live           | Deployed at `johar-portfolio.vercel.app`. Remaining acceptance criteria (LAUNCH_CHECKLIST.md) depend on Phase 3/5 and content finalization.                        |
+| Phase | Description                             | Status                             | Notes                                                                                                                                                              |
+| ----- | --------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0     | Audit and plan                          | Complete                           | Repo audited, all decision docs written and committed                                                                                                              |
+| 1     | Foundation and visual system            | Complete                           | Next.js scaffold, design tokens, next-intl, global layout, tests all green                                                                                         |
+| 2     | Content model and public portfolio      | Complete                           | All public pages live and reading from the database. Supabase outage resolved, see below.                                                                          |
+| 3     | Admin application and AI project import | In progress (3a, 3b settings done) | Auth foundation confirmed live. Settings page built. CRUD (projects/translations/media/notes) underway, no Johar input needed for it.                              |
+| 4     | Interactive lab                         | Built, pending review              | Both demos and the /lab index are built and pass verify; both stay behind their `site_settings` flags (`false`) until Johar reviews the content and flips them on. |
+| 5     | RAG backend                             | Not started                        | Unblocked (Gemini/Groq keys set). Not yet started.                                                                                                                 |
+| 6     | GitHub, SEO, performance, polish        | SEO metadata done                  | Per-page titles/descriptions, canonical/hreflang, sitemap.xml, robots.txt, Person JSON-LD. Performance/GitHub-polish items still open.                             |
+| 7     | QA and deployment                       | Vercel live                        | Deployed at `johar-portfolio.vercel.app`. Remaining acceptance criteria (LAUNCH_CHECKLIST.md) depend on Phase 3/5 and content finalization.                        |
 
 ## Phase 0 checklist
 
@@ -184,10 +177,26 @@ its size and complexity:
   - **Verified live**: unauthenticated `/admin` → 307 to `/admin/login`
     (confirmed via curl); login page renders correctly, and a wrong
     password is rejected with a clear error, no crash, no unexpected
-    console errors (confirmed via a real headless browser). The success
-    path (real sign-in → dashboard) is written but **not yet verified
-    live** — no admin account exists yet, see "Where we left off" above.
-- [ ] 3b — admin CRUD (projects, translations, media, notes, settings)
+    console errors (confirmed via a real headless browser). **Success
+    path confirmed live 2026-09-29** — Johar created the admin account,
+    registered it with `npm run admin:create`, and signed in for real.
+- [x] 3b (partial) — **settings page** (`/admin/settings`): toggles for
+      `f1_explorer_enabled`/`swiggy_simulator_enabled`, replacing the
+      "ask this session to flip it in the DB" step. New
+      `src/components/ui/switch.tsx` (Base UI has a `Switch` primitive,
+      just wasn't wrapped yet — no new dependency needed). Write path is
+      a Server Action (`src/app/admin/(protected)/settings/actions.ts`)
+      using the RLS-respecting client, not the secret/admin one — the
+      existing "admin can manage site settings" policy already permits
+      it for a signed-in admin, so there's no reason to bypass RLS here.
+      **Not independently verified live**: attempted to mint a real
+      session server-side (via `auth.admin.generateLink` + `verifyOtp`)
+      to test the write path without needing Johar's password, but the
+      token didn't verify outside a real redirect flow, and chasing that
+      further wasn't worth the time against a Server Action this simple.
+      Quick manual check needed: open `/admin/settings`, flip a toggle,
+      confirm it sticks after a refresh.
+- [ ] 3b (remaining) — projects/translations/media/notes CRUD
 - [ ] 3c — AI import schema migration (source documents, import jobs,
       extracted facts, content drafts, provenance, document revisions)
 - [ ] 3d — upload + extraction pipeline (PDF/DOCX/MD parsing, Gemini

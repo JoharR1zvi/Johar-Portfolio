@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { SignOutButton } from '@/components/admin/sign-out-button';
 import { getAdminSession } from '@/lib/auth/session';
 
@@ -16,9 +17,14 @@ export default async function AdminDashboardPage() {
         </div>
         <SignOutButton />
       </div>
+      <nav className="flex flex-col gap-2">
+        <Link href="/admin/settings" className="text-sm font-medium hover:underline">
+          Settings — lab demo visibility
+        </Link>
+      </nav>
       <p className="text-muted-foreground text-sm">
-        Project/translation/media/notes/settings management and the AI-assisted import workflow land
-        here next.
+        Project/translation/media/notes management and the AI-assisted import workflow land here
+        next.
       </p>
     </div>
   );
