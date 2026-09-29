@@ -532,6 +532,24 @@ near-black, keeping the exact same blue background. It's a small palette
 tweak, not a redesign; the same shade of blue on a badge or button, just
 readable text on top of it now.
 
+## Lesson 26: Why your admin password should never appear in this chat
+
+Phase 3 (the private admin area) started with just being able to sign in.
+The tempting shortcut would have been: you paste an email and password
+into this conversation, and a script creates that account directly. It
+would have worked, but your real admin password would then sit
+permanently in this session's transcript for no good reason.
+
+Instead, the account creation is split into two steps that keep the
+password entirely on your side: you create the account yourself directly
+in the Supabase dashboard (where a password field is actually meant to
+be typed), and then a small script only looks that account up by its
+email address and marks it as "the admin" in the database. The script
+never sees, asks for, or stores a password at all, it only ever asks
+"does a user with this email already exist, and if so, remember their
+ID." Small design choice, but it's the difference between "this system
+never has your password" and "this system technically saw it once."
+
 ---
 
 _Next lessons (Phase 2 onward) will cover: what "embeddings" and vector

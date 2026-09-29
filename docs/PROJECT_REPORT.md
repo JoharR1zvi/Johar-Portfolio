@@ -104,9 +104,13 @@ one), plus a sitemap, robots file, and structured data for the homepage
 Vercel setup). A routine dependency audit also caught and fixed a critical
 security vulnerability in a pinned framework version, and an automated
 accessibility check (WCAG 2.2 AA) found and fixed a real sitewide
-color-contrast issue — both closed the same day they were found. Next up:
-Phase 3, the admin panel and AI-assisted project import workflow, the
-largest remaining phase, now unblocked with LLM provider keys in place.
+color-contrast issue — both closed the same day they were found.
+
+**Phase 3 (the admin panel and AI-assisted project import workflow) is
+underway.** Its first checkpoint, admin authentication, is built and
+verified: a sign-in page, session handling, and route protection, all
+tested against a real browser. It's waiting on one manual step (creating
+the admin account) before the actual content-management screens start.
 
 **Current blocker (infrastructure, not code):** the project's Supabase
 database has become unreachable (its hostname no longer resolves),

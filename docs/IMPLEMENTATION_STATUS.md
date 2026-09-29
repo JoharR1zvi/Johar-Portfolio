@@ -38,21 +38,32 @@ for real once Phase 3/5 ships a route that uses them.
   case studies, and the Lab explorer/simulator copy to match — don't
   update just one of those places and leave the others stale.
 
-**Proposed next step, not yet started or agreed in detail:** Phase 3
-(admin app + AI-assisted project import) — the last real blocker (missing
-keys) is gone, and it's the highest-complexity remaining phase. Plan was
-to sketch the schema/pipeline design and check in before writing code,
-per Johar's stated preference for being walked through AI/RAG-heavy work
-rather than having it implemented silently (see "Working style" in
-`DECISIONS.md`). Confirm this is still the right next step before
-starting — don't assume and dive straight into implementation.
+**Phase 3 is underway.** Broken into checkpoints (see the Phase 3 checklist
+below for the full breakdown: 3a–3f). **3a (admin auth foundation) is done**
+and passes `npm run verify` — see that checklist for what was built and how
+it was tested. It could only be tested up to the point of "wrong password is
+correctly rejected," though: no admin account exists yet.
+
+**Action needed from Johar to unblock 3a → 3b:**
+
+1. Create the admin's Supabase Auth account: dashboard → Authentication →
+   Users → Add user. Enter an email + password directly (skip "send
+   invite" if offered) — the password never needs to touch this codebase
+   or this session.
+2. Run `npm run admin:create -- your@email.com` (uses the secret key to
+   look the user up and register them in `admin_users` — see
+   `scripts/create-admin.ts`).
+3. Sign in at `/admin/login` locally (or on Vercel) to confirm.
+
+Once that's done, next up is 3b (admin CRUD for projects/translations/
+media/notes/settings) — see the Phase 3 checklist below for the rest.
 
 | Phase | Description                             | Status                | Notes                                                                                                                                                              |
 | ----- | --------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 0     | Audit and plan                          | Complete              | Repo audited, all decision docs written and committed                                                                                                              |
 | 1     | Foundation and visual system            | Complete              | Next.js scaffold, design tokens, next-intl, global layout, tests all green                                                                                         |
 | 2     | Content model and public portfolio      | Complete              | All public pages live and reading from the database. Supabase outage resolved, see below.                                                                          |
-| 3     | Admin application and AI project import | Not started           | Unblocked (Gemini/Groq keys set). Highest complexity phase — not yet started.                                                                                      |
+| 3     | Admin application and AI project import | In progress (3a done) | Auth foundation built and verified. Blocked on Johar creating the admin account (see above) before 3b (CRUD) starts.                                               |
 | 4     | Interactive lab                         | Built, pending review | Both demos and the /lab index are built and pass verify; both stay behind their `site_settings` flags (`false`) until Johar reviews the content and flips them on. |
 | 5     | RAG backend                             | Not started           | Unblocked (Gemini/Groq keys set). Not yet started.                                                                                                                 |
 | 6     | GitHub, SEO, performance, polish        | SEO metadata done     | Per-page titles/descriptions, canonical/hreflang, sitemap.xml, robots.txt, Person JSON-LD. Performance/GitHub-polish items still open.                             |
@@ -141,6 +152,49 @@ just worked around): `src/app/[locale]/error.tsx` (a friendly, translated
 error boundary for any page-level data-fetch failure) and
 `getSiteSettings()` now fails soft to "both lab demos hidden" instead of
 throwing, since it only gates two optional badges, not real content.
+
+## Phase 3 checklist (in progress)
+
+Broken into checkpoints rather than built end-to-end in one pass, given
+its size and complexity:
+
+- [x] **3a — admin auth foundation.**
+  - `src/lib/auth/session.ts` (`getAdminSession()`) — checks
+    `auth.getUser()` then calls the `is_admin()` RPC (a `security definer`
+    SQL function from Phase 2's RLS migration, exposed via PostgREST;
+    `admin_users` itself has zero public policies, so this RPC is the only
+    way to check admin status from an RLS-respecting client).
+  - `src/app/admin/layout.tsx` — its own root `<html>`/`<body>`, since
+    `/admin` sits outside `[locale]` (private, English-only tool, no
+    next-intl).
+  - `src/app/admin/login/page.tsx` + `src/components/admin/login-form.tsx`
+    — email/password sign-in via `supabase.auth.signInWithPassword`,
+    Zod-validated (`src/lib/validation/auth.ts`).
+  - `src/app/admin/(protected)/layout.tsx` — route-group guard, redirects
+    to `/admin/login` if `getAdminSession()` returns null. Applies to
+    every route nested under it without repeating the check.
+  - `src/proxy.ts` — now branches on `/admin`: those routes get Supabase's
+    documented session-refresh middleware pattern (keeps the auth cookie
+    alive) instead of next-intl's locale middleware.
+  - `scripts/create-admin.ts` (`npm run admin:create -- email`) —
+    registers an _existing_ Supabase Auth user (created via the dashboard,
+    not this script) as the admin, by inserting their id into
+    `admin_users`. Deliberately doesn't create the Auth user itself, so
+    the actual password never touches this codebase.
+  - **Verified live**: unauthenticated `/admin` → 307 to `/admin/login`
+    (confirmed via curl); login page renders correctly, and a wrong
+    password is rejected with a clear error, no crash, no unexpected
+    console errors (confirmed via a real headless browser). The success
+    path (real sign-in → dashboard) is written but **not yet verified
+    live** — no admin account exists yet, see "Where we left off" above.
+- [ ] 3b — admin CRUD (projects, translations, media, notes, settings)
+- [ ] 3c — AI import schema migration (source documents, import jobs,
+      extracted facts, content drafts, provenance, document revisions)
+- [ ] 3d — upload + extraction pipeline (PDF/DOCX/MD parsing, Gemini
+      structured extraction, Zod-validated, versioned prompts)
+- [ ] 3e — review/approve → publish UI
+- [ ] 3f — update/compare workflow (deterministic field-level diff against
+      an existing project, selective accept/reject)
 
 ## Phase 4 checklist (built, pending review)
 

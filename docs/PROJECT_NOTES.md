@@ -848,6 +848,64 @@ which is real Phase 6/7 architecture work, not attempted blind tonight
 without a working database to verify the happy path against. Documented
 in `DECISIONS.md`, not silently dropped.
 
+## Phase 3a: admin auth foundation
+
+First real Phase 3 work, once Gemini/Groq keys arrived and unblocked the
+phase. Deliberately scoped to just auth — a working `/admin/login` and a
+route guard — rather than starting on CRUD or the AI pipeline in the same
+pass, since everything else in Phase 3 needs an authenticated admin
+session to build against.
+
+The schema was already half-done: `admin_users` and the `is_admin()`
+`security definer` SQL function were created back in the Phase 2 RLS
+migration, deliberately ahead of when they'd actually be used. `is_admin()`
+turned out to be exactly the right tool for checking admin status from
+application code, too — it's exposed as a PostgREST RPC by default (no
+explicit `revoke` was ever applied to it), so `supabase.rpc('is_admin')`
+from the regular RLS-respecting client works, which matters because
+`admin_users` itself has zero public SELECT policy at all — there's no
+other way to ask "is this signed-in user the admin" without either that
+RPC or the secret key.
+
+`/admin` needed its own root `src/app/admin/layout.tsx` (its own
+`<html>`/`<body>`), something nothing else in the app needed yet, because
+it sits as a sibling to `[locale]`, not nested inside it — the admin tool
+is private and English-only, so it was never going to go through
+next-intl's locale routing. That, in turn, meant `src/proxy.ts` needed to
+branch: `/admin/*` gets Supabase's own documented session-refresh
+middleware pattern (reads `auth.getUser()` to trigger a token refresh and
+writes the updated cookies onto the response), everything else keeps
+getting next-intl's locale middleware, same as before. The two didn't
+compose automatically — this needed an explicit `if (pathname.startsWith
+('/admin'))` branch inside one exported `proxy` function, since Next.js
+only allows one default-exported middleware per app.
+
+Route protection itself lives in `src/app/admin/(protected)/layout.tsx`
+(a route group, so it doesn't add a `/protected` segment to the URL) —
+every real admin page nests under it and gets the auth check for free,
+without repeating `if (!admin) redirect(...)` on every single page.
+
+**Deliberately didn't build a public admin registration flow, and
+deliberately didn't have this session create the admin's password.**
+`scripts/create-admin.ts` only registers an _already-existing_ Supabase
+Auth user (created by hand through the Supabase dashboard) as the admin,
+by looking them up by email with the secret key and inserting their id
+into `admin_users`. The alternative — asking Johar to paste a password
+into chat so a script could create the account directly — would have put
+his actual admin password in this conversation's transcript for no real
+benefit; this way it never leaves his own browser.
+
+Verified as much as possible without a real account yet: unauthenticated
+`/admin` correctly 307-redirects to `/admin/login` (curl), the login page
+renders cleanly, and — driven through an actual headless browser, not
+just assumed — submitting a wrong password shows a clear "Incorrect email
+or password" message, stays on the login page, and produces no unexpected
+console errors (the one console entry that does appear, a 400 from
+Supabase's own auth endpoint, is the expected shape of a correctly
+rejected login attempt, not a bug). The success path — real credentials →
+landing on the dashboard — is written but genuinely unverified until an
+admin account exists to test it with.
+
 ## Standing habit from here on
 
 Three more documents are now maintained alongside this one, updated every
