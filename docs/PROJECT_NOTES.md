@@ -930,6 +930,30 @@ Saving it the first time creates the row; saving it again updates the
 same one, via Postgres's `on conflict (project_id, locale)` — one code
 path handles both cases instead of branching on "does this row exist yet."
 
+## Phase 3b: notes CRUD, and why it needed a create flow when projects didn't
+
+Same pattern as the projects CRUD (`src/lib/db/admin-posts.ts`,
+RLS-respecting client, Core/English/German tabs), but with one real
+difference worth naming: projects deliberately don't have a "create new"
+form in the admin yet, since new projects are expected to arrive through
+the AI import pipeline once 3c–3f exist. Notes have no such pipeline
+planned at all — the admin UI genuinely is the only way a note will ever
+come into existence, and right now there are zero. So `/admin/notes`
+needed an actual create form (`create-note-form.tsx`), not just list +
+edit. It only asks for a slug (Zod-validated: lowercase, numbers,
+hyphens) and creates a bare `posts` row; the English/German tabs on the
+resulting edit page fill in everything else via the same upsert pattern
+the project translation tabs already use.
+
+Also added delete, which the projects admin still doesn't have — a
+deliberate asymmetry, not an oversight. A project being "gone" is a much
+bigger, rarer decision (it's presumably still true that the work
+happened) than a note, which is much closer to a scratch draft until it's
+actually published. Two-step confirm (click once to arm it, again to
+actually delete) rather than a native `confirm()` dialog, mostly to keep
+it in the same React-state-driven style as the rest of these forms rather
+than reaching for a different UI mechanism just for this one button.
+
 ## Standing habit from here on
 
 Three more documents are now maintained alongside this one, updated every

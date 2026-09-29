@@ -21,12 +21,15 @@ export default async function AdminDashboardPage() {
         <Link href="/admin/projects" className="text-sm font-medium hover:underline">
           Projects — core fields and translations
         </Link>
+        <Link href="/admin/notes" className="text-sm font-medium hover:underline">
+          Notes — technical write-ups
+        </Link>
         <Link href="/admin/settings" className="text-sm font-medium hover:underline">
           Settings — lab demo visibility
         </Link>
       </nav>
       <p className="text-muted-foreground text-sm">
-        Media, notes, and the AI-assisted import workflow land here next.
+        Media uploads and the AI-assisted import workflow land here next.
       </p>
     </div>
   );

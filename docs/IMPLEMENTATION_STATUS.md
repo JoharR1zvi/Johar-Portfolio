@@ -214,7 +214,24 @@ its size and complexity:
       (authenticated write via the Server Actions) has the same gap as the
       settings page above — not independently testable from this session,
       needs a quick manual check.
-- [ ] 3b (remaining) — notes CRUD, media upload
+- [x] 3b (partial) — **notes CRUD** (`/admin/notes`, `/admin/notes/[id]`):
+      same shape as the projects CRUD above (`src/lib/db/admin-posts.ts`,
+      RLS-respecting client, Core/English/German tabs), but notes needed
+      one thing projects didn't — an actual **create** flow. Projects are
+      expected to arrive through the AI import pipeline (3c–3f), but
+      nothing analogous exists or is planned for notes, and zero exist in
+      the database yet, so a slug-entry form on the list page
+      (`src/components/admin/create-note-form.tsx`, Zod-validated slug
+      pattern) is the only way a note will ever get created. Also has a
+      delete button (two-step confirm) — reasonable for notes in a way it
+      wouldn't be for projects, which are never really meant to be
+      deleted outright, just unpublished. **Verified**: unauthenticated
+      access to both routes redirects to login; `npm run verify` clean.
+      Same not-independently-testable gap on the actual save/create/delete
+      flows as the settings and projects pages above.
+- [ ] 3b (remaining) — media upload (needs a Storage bucket + policies,
+      genuinely new infrastructure, not just another CRUD table — a
+      separate slice from the rest of 3b)
 - [ ] 3c — AI import schema migration (source documents, import jobs,
       extracted facts, content drafts, provenance, document revisions)
 - [ ] 3d — upload + extraction pipeline (PDF/DOCX/MD parsing, Gemini
