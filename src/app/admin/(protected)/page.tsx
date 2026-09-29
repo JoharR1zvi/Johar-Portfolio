@@ -18,13 +18,15 @@ export default async function AdminDashboardPage() {
         <SignOutButton />
       </div>
       <nav className="flex flex-col gap-2">
+        <Link href="/admin/projects" className="text-sm font-medium hover:underline">
+          Projects — core fields and translations
+        </Link>
         <Link href="/admin/settings" className="text-sm font-medium hover:underline">
           Settings — lab demo visibility
         </Link>
       </nav>
       <p className="text-muted-foreground text-sm">
-        Project/translation/media/notes management and the AI-assisted import workflow land here
-        next.
+        Media, notes, and the AI-assisted import workflow land here next.
       </p>
     </div>
   );

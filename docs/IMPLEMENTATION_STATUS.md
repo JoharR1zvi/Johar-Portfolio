@@ -196,7 +196,25 @@ its size and complexity:
       further wasn't worth the time against a Server Action this simple.
       Quick manual check needed: open `/admin/settings`, flip a toggle,
       confirm it sticks after a refresh.
-- [ ] 3b (remaining) — projects/translations/media/notes CRUD
+- [x] 3b (partial) — **projects + translations CRUD** (`/admin/projects`,
+      `/admin/projects/[id]`): list view (status/published/review-status
+      badges per locale) and an edit page with three tabs (Core, English,
+      German). Core covers every `projects` column except `slug`/timestamps.
+      Each translation tab is an upsert — no German translation exists for
+      any project yet, so that tab creates one on first save rather than
+      requiring it to pre-exist. `src/lib/db/admin-projects.ts` holds the
+      reads/writes, all through the RLS-respecting client (the "admin can
+      manage projects"/"admin can manage project translations" policies
+      already cover a signed-in admin). **Deliberately out of scope for
+      this slice**: sections, metrics, and technologies (all one-to-many,
+      need a proper add/remove-row UI, cleaner as a separate pass than
+      folded into the same forms). **Verified**: unauthenticated
+      `/admin/projects` and `/admin/projects/[id]` both redirect to
+      `/admin/login` (curl); `npm run verify` clean. The actual save flow
+      (authenticated write via the Server Actions) has the same gap as the
+      settings page above — not independently testable from this session,
+      needs a quick manual check.
+- [ ] 3b (remaining) — notes CRUD, media upload
 - [ ] 3c — AI import schema migration (source documents, import jobs,
       extracted facts, content drafts, provenance, document revisions)
 - [ ] 3d — upload + extraction pipeline (PDF/DOCX/MD parsing, Gemini

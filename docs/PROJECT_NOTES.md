@@ -906,6 +906,30 @@ rejected login attempt, not a bug). The success path — real credentials →
 landing on the dashboard — is written but genuinely unverified until an
 admin account exists to test it with.
 
+## Phase 3b: projects + translations CRUD
+
+Same shape as the settings page, scaled up: `src/lib/db/admin-projects.ts`
+holds admin reads/writes for `projects`/`project_translations`, all
+through the RLS-respecting client, no admin/secret client needed, since
+the existing `is_admin()`-gated policies already cover a signed-in admin
+for both tables. The list page (`/admin/projects`) shows every project
+regardless of publish state, unlike the public `getPublishedProjects()` —
+a genuinely different query, not a filtered view of the same one, since
+the public version leans on RLS to do that filtering implicitly and an
+admin view needs the opposite.
+
+Deliberately scoped to core fields + top-level translation text only, not
+sections/metrics/technologies — those are all one-to-many relationships
+that need real add/remove-row UI, and trying to fold them into the same
+tabbed form would have made this pass both slower to ship and harder to
+verify. A separate, later admin slice.
+
+The German tab upserts rather than requiring a translation row to already
+exist, since no project has one yet (seeding only ever inserted English).
+Saving it the first time creates the row; saving it again updates the
+same one, via Postgres's `on conflict (project_id, locale)` — one code
+path handles both cases instead of branching on "does this row exist yet."
+
 ## Standing habit from here on
 
 Three more documents are now maintained alongside this one, updated every
