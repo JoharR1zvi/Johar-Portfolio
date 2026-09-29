@@ -9,9 +9,9 @@ version before going deeper.
 
 - **Name:** Personal Portfolio & AI Assistant Platform
 - **Type:** Personal project
-- **Status:** In progress (Phase 2 of 7 complete, Phase 4's interactive lab
-  built and pending my review — reviewed project case studies are live on
-  the public site, pending a Supabase infrastructure fix, see below)
+- **Status:** In progress (Phases 1, 2, and most of 4/6 complete; deployed
+  and live at `johar-portfolio.vercel.app`. Phase 3, the admin panel and
+  AI-assisted content import, is next.)
 - **My role:** Sole designer and developer
 
 ## 2. The problem
@@ -95,11 +95,18 @@ Ahead of schedule, the interactive lab (Phase 4) is also built: an
 F1-pipeline explorer and a mocked Swiggy assistant simulator, both running
 entirely on static/scripted content with no live database or AI-provider
 dependency at all. Both stay hidden behind a feature flag until I review
-the content myself and turn them on, so nothing above is publicly visible
-yet. Every page also now has its own real search-engine title and
-description (previously every page silently shared one), plus a sitemap,
-robots file, and structured data for the homepage (Phase 6, started
-early).
+the content myself and turn them on. Every page also now has its own real
+search-engine title and description (previously every page silently shared
+one), plus a sitemap, robots file, and structured data for the homepage
+(Phase 6, started early).
+
+**The site is deployed and live** at `johar-portfolio.vercel.app` (Phase 7's
+Vercel setup). A routine dependency audit also caught and fixed a critical
+security vulnerability in a pinned framework version, and an automated
+accessibility check (WCAG 2.2 AA) found and fixed a real sitewide
+color-contrast issue — both closed the same day they were found. Next up:
+Phase 3, the admin panel and AI-assisted project import workflow, the
+largest remaining phase, now unblocked with LLM provider keys in place.
 
 **Current blocker (infrastructure, not code):** the project's Supabase
 database has become unreachable (its hostname no longer resolves),

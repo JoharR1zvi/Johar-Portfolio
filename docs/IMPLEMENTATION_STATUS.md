@@ -6,7 +6,47 @@ Tracks phase progress against the plan in the master prompt (section 24) and
 **Repository:** pushed to GitHub at `JoharR1zvi/Johar-Portfolio`, branch
 `main`. History was squashed to a single clean initial commit before the
 first push (see `DECISIONS.md`) so no local-only or tool-specific file ever
-touched the public repo.
+touched the public repo. **Live at `https://johar-portfolio.vercel.app`.**
+
+## Where we left off (2026-09-29) — read this first
+
+**Infrastructure is fully live, nothing is blocked.** Supabase restored,
+Vercel deployed, `NEXT_PUBLIC_SITE_URL` set correctly in Vercel's
+Production env vars (canonical/hreflang/sitemap verified correct on the
+live site), Gemini + Groq keys are in `.env.local` — see "Live
+infrastructure issue" below for the full trail.
+
+**One setup gap still open:** `GOOGLE_GENERATIVE_AI_API_KEY` and
+`GROQ_API_KEY` are only in `.env.local`, not yet added to Vercel's
+Production env vars. Add them there (same names) before any Phase 3/5
+feature that uses them gets deployed, or it'll work locally and 500 in
+production.
+
+**Waiting on Johar, not blocking further work:**
+
+- Review `/lab/f1-explorer` and `/lab/swiggy-simulator` (force
+  `site_settings` flags true locally to preview, or ask this session to)
+  and flip `f1_explorer_enabled`/`swiggy_simulator_enabled` to `true` in
+  Supabase when ready to make them public.
+- Johar confirmed (2026-09-29) **both the F1 predictor and Swiggy
+  assistant are finished projects** — current site copy still frames F1
+  as "in progress, no metrics" and Swiggy as "55+ tests" (see
+  `LAUNCH_CHECKLIST.md` for the exact discrepancies already found in his
+  local docs). He'll upload newer/finished source documents for both
+  later; when they arrive, re-parse into `CONTENT_FACTS.md` following its
+  existing precedence rules, then update the seed data
+  (`supabase/seed/data/projects/{f1-predictor,swiggy}.ts`), the published
+  case studies, and the Lab explorer/simulator copy to match — don't
+  update just one of those places and leave the others stale.
+
+**Proposed next step, not yet started or agreed in detail:** Phase 3
+(admin app + AI-assisted project import) — the last real blocker (missing
+keys) is gone, and it's the highest-complexity remaining phase. Plan was
+to sketch the schema/pipeline design and check in before writing code,
+per Johar's stated preference for being walked through AI/RAG-heavy work
+rather than having it implemented silently (see "Working style" in
+`DECISIONS.md`). Confirm this is still the right next step before
+starting — don't assume and dive straight into implementation.
 
 | Phase | Description                             | Status                | Notes                                                                                                                                                              |
 | ----- | --------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

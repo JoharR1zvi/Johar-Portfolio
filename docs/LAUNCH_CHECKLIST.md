@@ -11,27 +11,29 @@ most require Johar's input (content/assets/confirmations), not code.
 - [ ] Confirm final MSc specialization wording; add expected graduation date once known (do not invent one before then).
 - [ ] Synchronize the F1 GitHub README with actual project progress; confirm final target/metrics.
 - [ ] Confirm which F1 metrics/charts are stable enough to publish.
-- [ ] **The local `F1_Race_Predictor_Project_Report.docx` (read directly,
-      Phase 4, for the Lab explorer) describes considerably more finished
-      work than the current public case study or `CONTENT_FACTS.md`
-      reflect**: a full 12-section EDA, three trained model classes
-      (logistic regression, random forest, XGBoost), a defined primary
-      target (`points_finish`, 50.1% positive rate), and a time-based
-      cross-validation scheme, though it states no concrete accuracy/ROC-AUC
-      _value_ (so nothing numeric was surfaced anywhere tonight). Worth a
-      look to decide whether the public project page should be updated to
-      reflect this — deliberately not done automatically, since
-      `docs/CONTENT_FACTS.md` explicitly treats this document as a working
-      draft whose figures need your confirmation before publishing.
+- [ ] **F1 predictor: Johar confirmed (2026-09-29) the project is
+      finished** — current site copy still frames it as "in progress, no
+      metrics" (the local `F1_Race_Predictor_Project_Report.docx`, read
+      directly in Phase 4, already hinted at this: a full 12-section EDA,
+      three trained model classes, a defined primary target, a time-based
+      cross-validation scheme, just no stated accuracy/ROC-AUC value).
+      **Blocked on Johar uploading a newer/finished source doc.** Once it
+      arrives: re-parse into `CONTENT_FACTS.md`, then update
+      `supabase/seed/data/projects/f1-predictor.ts`, the published case
+      study, and `messages/{en,de}.json`'s `labF1` section (used by
+      `src/components/lab/f1-pipeline.tsx`) together, not just one of them.
 - [ ] Confirm Swiggy repository/demo visibility and the exact extent of live-key testing. Never publish the key.
-- [ ] Reconcile the Swiggy mocked-test count: the published case study and Lab
-      simulator both say "55+" (from `docs/CONTENT_FACTS.md`/the master
-      prompt), but the local `Swiggy Instamart Agent - Project Notes v2.docx`
-      (read directly, Phase 4) says all 62 tests currently pass. The "v2" in
-      that filename suggests it postdates the master prompt's figure. Left
-      as "55+" everywhere tonight since that's the higher-precedence,
-      already-reviewed number per `CONTENT_FACTS.md`'s own precedence
-      order — not changed without Johar's confirmation of which is current.
+- [ ] **Swiggy: Johar confirmed (2026-09-29) the project is finished.**
+      Same pattern as F1 — the published case study and Lab simulator both
+      say "55+" tests (from `docs/CONTENT_FACTS.md`/the master prompt),
+      but the local `Swiggy Instamart Agent - Project Notes v2.docx` (read
+      directly, Phase 4) says 62 currently pass; the "v2" filename suggests
+      it postdates the master prompt's figure. **Blocked on Johar
+      uploading a newer/finished source doc** — once it arrives, re-parse
+      into `CONTENT_FACTS.md`, then update
+      `supabase/seed/data/projects/swiggy.ts`, the published case study,
+      and `messages/{en,de}.json`'s `labSwiggy` section (used by
+      `src/components/lab/swiggy-agent-simulator.tsx`) together.
 - [ ] Add architecture diagrams and screenshots for PE-CDSS and Swiggy.
 - [x] Confirm the 90% accuracy claim before it's shown publicly (Johar confirmed directly, 2026-07-31; now live).
 - [ ] Document the skin-lesion dataset, split methodology, and evaluation details behind that confirmed figure (follow-up, not a blocker).
