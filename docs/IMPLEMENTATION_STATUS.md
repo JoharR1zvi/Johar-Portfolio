@@ -16,11 +16,10 @@ Production env vars (canonical/hreflang/sitemap verified correct on the
 live site), Gemini + Groq keys are in `.env.local` — see "Live
 infrastructure issue" below for the full trail.
 
-**One setup gap still open:** `GOOGLE_GENERATIVE_AI_API_KEY` and
-`GROQ_API_KEY` are only in `.env.local`, not yet added to Vercel's
-Production env vars. Add them there (same names) before any Phase 3/5
-feature that uses them gets deployed, or it'll work locally and 500 in
-production.
+`GOOGLE_GENERATIVE_AI_API_KEY`/`GROQ_API_KEY`: in `.env.local`, and Johar
+says he's also added them to Vercel's Production env vars — not yet
+independently verified (no deployed route exercises them yet). Confirm
+for real once Phase 3/5 ships a route that uses them.
 
 **Waiting on Johar, not blocking further work:**
 
